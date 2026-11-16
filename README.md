@@ -13,6 +13,8 @@ Tout tient dans **un seul fichier `index.html`** (HTML, CSS et JS intégrés). I
   - **Hardstyle, 150 BPM** (composition originale en Fa mineur) : kick hardstyle saturé, reverse bass, screech lead, lead supersaw euphorique avec réverbération, nappes et snare roll.
 
   L'arrangement tourne sur 32 mesures (drop, breakdown, build) et les visuels suivent l'horloge audio.
+- **Mode « Sick Legend » (Spotify)** : un lecteur Spotify officiel (iFrame API) avec la playlist « This Is SICK LEGEND » et des raccourcis vers plusieurs titres. Il est chargé **uniquement quand on choisit ce mode**, et il demande Internet ; le reste du site fonctionne toujours hors ligne. On entend les titres complets si l'on est connecté à Spotify dans le navigateur, sinon des extraits de 30 s. Pendant la lecture, la scène passe en mode show à environ 150 BPM. Spotify ne donne pas accès au signal audio, donc les effets ne sont pas calés exactement sur les temps du morceau.
+- **Logo** : intégré directement dans `index.html` (en-tête, pied de page, icône d'onglet), sans fichier image séparé.
 - **Égaliseur animé** branché sur un `AnalyserNode`.
 - **En-tête** avec le logo et le menu (Line-up, Releases, Tickets), puis les sections correspondantes. Le pied de page affiche le crédit.
 
