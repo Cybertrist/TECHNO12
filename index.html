@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TECHNO12 Records — Live Warehouse Session 2026</title>
+<meta name="description" content="TECHNO12 Records, label techno fictif. Live • Warehouse Session • 2026. Animation de concert immersive et boucle techno générée en temps réel.">
+<meta name="theme-color" content="#07030d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307030d'/%3E%3Cpath d='M14 18h36M32 18v30' stroke='%2300f0ff' stroke-width='8' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='46' r='6' fill='%23ff1fd1'/%3E%3C/svg%3E">
+<style>
+:root{
+  --cyan:#00f0ff; --mag:#ff1fd1; --green:#39ff14; --yel:#ffe600;
+  --bg:#07030d; --ink:#f3eefe; --muted:#a99bc4; --line:rgba(255,255,255,.09);
+  --panel:rgba(8,4,16,.92);
+  --font-display:"Arial Black","Arial Bold","Helvetica Neue",Impact,"Segoe UI Black",system-ui,sans-serif;
+  --font-ui:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg);-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--ink);font-family:var(--font-ui);background:var(--bg);overflow-x:hidden;line-height:1.5}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+a{color:inherit}
+
+/* ---------- Scène ---------- */
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;background:#05020a}
+
+/* ---------- En-tête ---------- */
+.site-header{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.85rem clamp(1rem,4vw,2.5rem);
+  padding-top:max(.85rem,env(safe-area-inset-top));
+  background:linear-gradient(to bottom,rgba(5,2,10,.92),rgba(5,2,10,.55) 70%,rgba(5,2,10,0));
+}
+.logo{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink)}
+.logo svg{width:36px;height:36px;flex:none;filter:drop-shadow(0 0 8px rgba(0,240,255,.6))}
+.logo-text{display:flex;flex-direction:column;line-height:1}
+.logo-text b{font:900 1.05rem/1 var(--font-display);letter-spacing:.06em}
+.logo-text small{font:700 .62rem/1 var(--font-mono);letter-spacing:.55em;color:var(--cyan);margin-top:.3rem}
+.site-header nav ul{display:flex;align-items:center;gap:clamp(.8rem,2.6vw,2.2rem);list-style:none;margin:0;padding:0}
+.site-header nav a{
+  position:relative;display:inline-block;padding:.45rem 0;text-decoration:none;
+  font:700 .78rem/1 var(--font-mono);letter-spacing:.22em;text-transform:uppercase;
+}
+.site-header nav a::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--mag));
+  transform:scaleX(0);transform-origin:left;transition:transform .25s ease;
+}
+.site-header nav a:hover::after,.site-header nav a:focus-visible::after{transform:scaleX(1)}
+.fx-toggle{
+  font:700 .66rem/1 var(--font-mono);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line);
+  border-radius:999px;padding:.45rem .7rem;cursor:pointer;
+}
+.fx-toggle[aria-pressed="true"] span{color:var(--yel)}
+.fx-toggle[aria-pressed="false"] span{color:var(--muted)}
+:focus-visible{outline:2px solid var(--yel);outline-offset:3px}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;z-index:10;min-height:100vh;min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:calc(5.2rem + 3vh) 1rem 0;
+}
+.title-wrap{position:relative;will-change:transform;transform-origin:50% 60%}
+.title,.title-glow{font:900 clamp(3.3rem,14.5vw,11rem)/.9 var(--font-display);letter-spacing:-.01em;text-transform:uppercase}
+.title{position:relative;z-index:1;margin:0}
+.title-main{
+  display:block;
+  background:linear-gradient(90deg,var(--cyan) 0%,var(--mag) 25%,var(--yel) 50%,var(--green) 75%,var(--cyan) 100%);
+  background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  animation:neon 5s linear infinite;
+}
+.title-glow{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  color:var(--mag);filter:blur(26px);opacity:.45;will-change:opacity;
+}
+@keyframes neon{to{background-position:200% 0}}
+.title::before,.title::after{
+  content:attr(data-text);position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  clip-path:inset(100% 0 0 0);
+}
+.title::before{color:var(--cyan);animation:glitchA 3.4s steps(1) infinite}
+.title::after{color:var(--mag);animation:glitchB 4.1s steps(1) infinite}
+.title.hit{animation:jitter .38s steps(1) 1}
+.title.hit::before{animation:glitchA .38s steps(1) 1;animation-delay:-3.0s}
+.title.hit::after{animation:glitchB .38s steps(1) 1;animation-delay:-3.6s}
+@keyframes glitchA{
+  0%,86%,100%{clip-path:inset(100% 0 0 0);transform:none}
+  87%{clip-path:inset(8% 0 64% 0);transform:translate(-7px,-2px)}
+  89%{clip-path:inset(52% 0 22% 0);transform:translate(6px,1px)}
+  91%{clip-path:inset(30% 0 46% 0);transform:translate(-4px,0)}
+  93%{clip-path:inset(76% 0 5% 0);transform:translate(8px,2px)}
+  95%{clip-path:inset(0 0 84% 0);transform:translate(-5px,-1px)}
+  97%{clip-path:inset(100% 0 0 0);transform:none}
+}
+@keyframes glitchB{
+  0%,85%,100%{clip-path:inset(100% 0 0 0);transform:none}
+  88%{clip-path:inset(62% 0 14% 0);transform:translate(7px,2px)}
+  90%{clip-path:inset(14% 0 70% 0);transform:translate(-6px,-1px)}
+  92%{clip-path:inset(40% 0 36% 0);transform:translate(5px,0)}
+  94%{clip-path:inset(84% 0 0 0);transform:translate(-8px,1px)}
+  96%{clip-path:inset(100% 0 0 0);transform:none}
+}
+@keyframes jitter{
+  0%{transform:translate(0)} 20%{transform:translate(-3px,1px) skewX(-6deg)}
+  40%{transform:translate(4px,-1px) skewX(4deg)} 60%{transform:translate(-2px,0)}
+  80%{transform:translate(2px,1px) skewX(-2deg)} 100%{transform:none}
+}
+.sub{
+  margin:1rem 0 0;font:700 clamp(.72rem,2vw,1.05rem)/1.3 var(--font-mono);
+  letter-spacing:.38em;text-transform:uppercase;color:var(--ink);
+  text-shadow:0 0 14px rgba(0,0,0,.95),0 0 22px rgba(0,240,255,.45);
+}
+.sub span{color:var(--mag)}
+.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1rem 1.4rem;margin-top:clamp(1.1rem,3.5vh,2rem)}
+.drop{
+  position:relative;display:inline-flex;align-items:center;gap:.75rem;
+  padding:1rem 1.7rem;border:0;border-radius:999px;cursor:pointer;
+  font:900 .95rem/1 var(--font-ui);letter-spacing:.2em;text-transform:uppercase;color:#07030d;
+  background:linear-gradient(90deg,var(--cyan),var(--mag));
+  box-shadow:0 0 0 2px rgba(255,255,255,.1),0 0 26px rgba(255,31,209,.55),0 0 60px rgba(0,240,255,.25);
+  transition:transform .15s ease,box-shadow .2s ease;
+}
+.drop::after{
+  content:"";position:absolute;inset:-6px;border-radius:inherit;border:2px solid rgba(0,240,255,.6);
+  animation:ring 1.875s ease-out infinite;pointer-events:none;
+}
+.drop:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 0 2px rgba(255,255,255,.2),0 0 34px rgba(255,31,209,.8),0 0 80px rgba(0,240,255,.4)}
+.drop:active{transform:scale(.98)}
+.drop:disabled{opacity:.7;cursor:progress}
+.drop[aria-pressed="true"]{background:linear-gradient(90deg,var(--yel),var(--green))}
+.drop[aria-pressed="true"]::after{animation-duration:.469s;border-color:rgba(57,255,20,.7)}
+.drop-icon{width:0;height:0;border-style:solid;border-width:7px 0 7px 12px;border-color:transparent transparent transparent #07030d}
+.drop[aria-pressed="true"] .drop-icon{width:12px;height:12px;border:0;background:#07030d;border-radius:2px}
+@keyframes ring{0%{transform:scale(.96);opacity:.9}100%{transform:scale(1.18);opacity:0}}
+.eq-box{display:flex;align-items:center;gap:.7rem;padding:.55rem .8rem;border-radius:12px;background:rgba(5,2,10,.55);border:1px solid var(--line)}
+#eq{width:200px;height:40px;display:block}
+.bpm{font:700 .7rem/1.25 var(--font-mono);letter-spacing:.18em;color:var(--muted);text-align:left;text-transform:uppercase}
+.bpm b{display:block;color:var(--ink);font-size:.9rem}
+.hint{margin:.9rem 0 0;font:.72rem/1.4 var(--font-mono);letter-spacing:.12em;color:var(--muted);text-shadow:0 0 10px #000}
+
+/* ---------- Contenu ---------- */
+.content{position:relative;z-index:10;background:linear-gradient(to bottom,rgba(8,4,16,0),var(--panel) 7rem)}
+.section{max-width:1120px;margin:0 auto;padding:clamp(3.5rem,8vw,6rem) clamp(1rem,4vw,2rem) 1rem;scroll-margin-top:4.5rem}
+.section h2{
+  margin:0 0 .4rem;font:900 clamp(1.8rem,5vw,3rem)/1 var(--font-display);letter-spacing:-.01em;text-transform:uppercase;
+}
+.section h2 span{color:var(--cyan)}
+.section .lead{margin:0 0 2rem;color:var(--muted);max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}
+.card{
+  position:relative;padding:1.25rem;border-radius:16px;
+  background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+  border:1px solid var(--line);transition:border-color .2s ease,transform .2s ease;
+}
+.card:hover{border-color:rgba(0,240,255,.45);transform:translateY(-3px)}
+.card h3{margin:0;font:900 1.25rem/1.15 var(--font-display);letter-spacing:.01em}
+.meta{margin:.35rem 0 0;font:700 .72rem/1.4 var(--font-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.slot{display:inline-block;margin-top:1rem;font:700 .72rem/1 var(--font-mono);letter-spacing:.12em;padding:.4rem .6rem;border-radius:6px;background:rgba(255,31,209,.12);color:var(--mag)}
+.headliner{border-color:rgba(255,31,209,.45);box-shadow:0 0 40px rgba(255,31,209,.12) inset}
+.cover{aspect-ratio:1;border-radius:10px;margin-bottom:1rem;position:relative;overflow:hidden;display:grid;place-items:end start;padding:.8rem;font:900 .8rem/1 var(--font-mono);letter-spacing:.18em;color:rgba(255,255,255,.9)}
+.c1{background:repeating-linear-gradient(115deg,#00f0ff 0 6px,#07030d 6px 22px),#07030d}
+.c2{background:radial-gradient(circle at 30% 30%,#ff1fd1,transparent 55%),radial-gradient(circle at 75% 70%,#ffe600,transparent 50%),#120624}
+.c3{background:conic-gradient(from 45deg,#39ff14,#00f0ff,#ff1fd1,#39ff14);}
+.c4{background:repeating-radial-gradient(circle at 50% 50%,#ffe600 0 3px,#07030d 3px 14px)}
+.cover::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent 55%)}
+.cover span{position:relative}
+.tickets{display:grid;gap:.8rem}
+.ticket{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1rem 1.5rem;
+  padding:1.1rem 1.25rem;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+}
+.ticket time{font:900 1.5rem/1 var(--font-display);color:var(--cyan);white-space:nowrap}
+.ticket time small{display:block;font:700 .68rem/1.4 var(--font-mono);letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.ticket h3{margin:0;font:800 1.05rem/1.25 var(--font-ui)}
+.ticket p{margin:.2rem 0 0;color:var(--muted);font-size:.9rem}
+.tag{font:800 .7rem/1 var(--font-mono);letter-spacing:.16em;text-transform:uppercase;padding:.6rem .9rem;border-radius:999px;white-space:nowrap;border:1px solid currentColor}
+.tag.soon{color:var(--cyan)} .tag.last{color:var(--yel)} .tag.out{color:var(--muted);text-decoration:line-through}
+@media (max-width:620px){
+  .ticket{grid-template-columns:1fr auto}
+  .ticket .info{grid-column:1/-1;grid-row:2}
+}
+
+/* ---------- Pied de page ---------- */
+.site-footer{
+  position:relative;z-index:10;background:#05020a;text-align:center;
+  padding:3rem 1rem calc(3rem + env(safe-area-inset-bottom));
+  border-top:2px solid transparent;
+  border-image:linear-gradient(90deg,var(--cyan),var(--mag),var(--yel),var(--green)) 1;
+}
+.credit{
+  margin:0;font:800 clamp(1.05rem,3vw,1.6rem)/1.35 var(--font-ui);letter-spacing:.02em;
+  background:linear-gradient(90deg,var(--cyan),var(--mag),var(--yel));
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+}
+.fine{margin:.9rem auto 0;max-width:62ch;color:var(--muted);font-size:.82rem}
+
+/* ---------- Responsive ---------- */
+@media (max-width:640px){
+  .site-header{flex-direction:column;gap:.45rem;padding-bottom:1.4rem}
+  .logo svg{width:28px;height:28px}
+  .site-header nav ul{gap:1rem}
+  .site-header nav a{font-size:.68rem;letter-spacing:.16em}
+  .hero{padding-top:calc(7rem + 2vh)}
+  .drop{padding:.9rem 1.4rem;font-size:.85rem}
+  #eq{width:150px;height:34px}
+}
+
+/* ---------- Mouvement réduit ---------- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .title-main{animation-duration:30s}
+  .title::before,.title::after,.title.hit,.title.hit::before,.title.hit::after{animation:none!important;display:none}
+  .drop::after{animation:none;opacity:.5}
+  .card,.drop{transition:none}
+}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<header class="site-header">
+  <a class="logo" href="#top" aria-label="TECHNO12 Records — retour en haut">
+    <svg viewBox="0 0 40 40" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="37" height="37" rx="9" fill="#07030d" stroke="#00f0ff" stroke-width="2"/>
+      <path d="M10 12h20M20 12v17" stroke="#00f0ff" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="29.5" cy="28.5" r="3.6" fill="#ff1fd1"/>
+    </svg>
+    <span class="logo-text"><b>TECHNO12</b><small>RECORDS</small></span>
+  </a>
+  <nav aria-label="Navigation principale">
+    <ul>
+      <li><a href="#lineup">Line-up</a></li>
+      <li><a href="#releases">Releases</a></li>
+      <li><a href="#tickets">Tickets</a></li>
+      <li><button class="fx-toggle" id="fxToggle" type="button" aria-pressed="true" title="Activer ou couper les flashs stroboscopiques">Flashs <span id="fxState">ON</span></button></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="title">
+    <div class="title-wrap" id="titleWrap">
+      <span class="title-glow" id="titleGlow" aria-hidden="true">TECHNO12</span>
+      <h1 class="title" id="title" data-text="TECHNO12"><span class="title-main">TECHNO12</span></h1>
+    </div>
+    <p class="sub">Live <span>•</span> Warehouse Session <span>•</span> 2026</p>
+    <div class="controls">
+      <button class="drop" id="dropBtn" type="button" aria-pressed="false">
+        <span class="drop-icon" aria-hidden="true"></span><span id="dropLabel">Drop the beat</span>
+      </button>
+      <div class="eq-box">
+        <canvas id="eq" aria-hidden="true"></canvas>
+        <span class="bpm"><b>128 BPM</b>Acid · A min</span>
+      </div>
+    </div>
+    <p class="hint" id="hint">Son généré en direct dans le navigateur, aucun fichier audio</p>
+    <p class="sr-only" id="status" aria-live="polite"></p>
+  </section>
+
+  <div class="content">
+    <section class="section" id="lineup" aria-labelledby="lineup-t">
+      <h2 id="lineup-t">Line<span>-</span>up</h2>
+      <p class="lead">Une nuit, un entrepôt, quatre sets. Le roster du label aux platines, du warm-up jusqu'à la fermeture.</p>
+      <div class="grid">
+        <article class="card"><h3>Mira Voss</h3><p class="meta">Hypnotic · Deep techno</p><span class="slot">22:00 — 23:30</span></article>
+        <article class="card"><h3>Subterra</h3><p class="meta">Live hardware · Acid</p><span class="slot">23:30 — 01:00</span></article>
+        <article class="card headliner"><h3>KRNL_12</h3><p class="meta">Headliner · Industrial</p><span class="slot">01:00 — 03:00</span></article>
+        <article class="card"><h3>Oxide b2b Halo</h3><p class="meta">Closing · Rave / Trance</p><span class="slot">03:00 — 05:00</span></article>
+      </div>
+    </section>
+
+    <section class="section" id="releases" aria-labelledby="releases-t">
+      <h2 id="releases-t">Re<span>lea</span>ses</h2>
+      <p class="lead">Les dernières sorties du catalogue, vinyle 12" et numérique.</p>
+      <div class="grid">
+        <article class="card"><div class="cover c1" aria-hidden="true"><span>T12-031</span></div><h3>Concrete Pulse EP</h3><p class="meta">KRNL_12 · Vinyle 12"</p></article>
+        <article class="card"><div class="cover c2" aria-hidden="true"><span>T12-030</span></div><h3>Night Shift</h3><p class="meta">Mira Voss · Digital</p></article>
+        <article class="card"><div class="cover c3" aria-hidden="true"><span>T12-029</span></div><h3>303 Ghosts</h3><p class="meta">Subterra · Vinyle 12"</p></article>
+        <article class="card"><div class="cover c4" aria-hidden="true"><span>T12-028</span></div><h3>Warehouse Tools Vol.3</h3><p class="meta">V.A. · Compilation</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="tickets" aria-labelledby="tickets-t">
+      <h2 id="tickets-t">Tic<span>k</span>ets</h2>
+      <p class="lead">Warehouse Session 2026 : trois dates, des entrepôts différents, le même son.</p>
+      <div class="tickets">
+        <article class="ticket"><time datetime="2026-12-05">05.12<small>Samedi</small></time><div class="info"><h3>Hangar 12 — Lorient</h3><p>23:00 – 06:00 · Line-up complet</p></div><span class="tag out">Sold out</span></article>
+        <article class="ticket"><time datetime="2026-12-12">12.12<small>Samedi</small></time><div class="info"><h3>Entrepôt B — Vannes</h3><p>23:00 – 06:00 · KRNL_12, Subterra</p></div><span class="tag last">Derniers billets</span></article>
+        <article class="ticket"><time datetime="2026-12-31">31.12<small>Jeudi</small></time><div class="info"><h3>Les Docks — Rennes</h3><p>22:00 – 08:00 · New Year Warehouse</p></div><span class="tag soon">Bientôt</span></article>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p class="credit">Site réalisé par Tristan Joncour · ENSIBS CyberDef5</p>
+  <p class="fine">TECHNO12 Records est un label fictif. Animation Canvas 2D et audio synthétisé en temps réel avec la Web Audio API — aucune dépendance externe.</p>
+</footer>
+
+<noscript><p style="position:relative;z-index:40;text-align:center;padding:1rem;background:#000">Activez JavaScript pour voir l'animation et entendre la boucle techno.</p></noscript>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   Utilitaires
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+const BPM = 128, SPB = 60 / BPM, STEP = SPB / 4;          // durée d'une double-croche
+const PALETTE = [[0, 240, 255], [255, 31, 209], [57, 255, 20], [255, 230, 0]];
+const LAVENDER = [205, 185, 255];
+const WHITE = [255, 255, 255];
+
+/* Préférences : mouvement réduit + flashs */
+const mqRM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+let RM = mqRM.matches;
+let flashesOn = !RM;
+const fxBtn = $('#fxToggle'), fxState = $('#fxState');
+function setFlashes(on) {
+  flashesOn = on;
+  fxBtn.setAttribute('aria-pressed', String(on));
+  fxState.textContent = on ? 'ON' : 'OFF';
+}
+setFlashes(flashesOn);
+fxBtn.addEventListener('click', () => setFlashes(!flashesOn));
+if (mqRM.addEventListener) mqRM.addEventListener('change', e => { RM = e.matches; if (RM) setFlashes(false); });
+
+/* =========================================================
+   Arrangement (partagé entre l'audio et les visuels)
+   Boucle de 32 mesures : drop (0-23) · breakdown (24-29) · build (30-31)
+   Premier passage : intro sur les mesures 0-7.
+   ========================================================= */
+function arrangement(bar) {
+  if (bar < 0) bar = 0;
+  const s = bar % 32, first = bar < 32;
+  if (first && bar < 4) return { sec: 'intro', kick: true, hat: true, bass: false, clap: false, roll: false, s };
+  if (first && bar < 8) return { sec: 'intro', kick: true, hat: true, bass: true, clap: false, roll: false, s };
+  if (s < 24) return { sec: 'drop', kick: true, hat: true, bass: true, clap: true, roll: false, s };
+  if (s < 30) return { sec: 'break', kick: false, hat: s >= 26, bass: true, clap: false, roll: false, s };
+  return { sec: 'build', kick: false, hat: true, bass: true, clap: false, roll: true, s };
+}
+const isDropStart = bar => bar === 8 || (bar >= 32 && bar % 32 === 0);
+const IDLE = { sec: 'idle', kick: true, hat: false, bass: false, clap: false, roll: false, s: 0 };
+
+/* =========================================================
+   Moteur audio — 100 % Web Audio, aucun fichier
+   ========================================================= */
+// Motif acide sur 2 mesures : [demi-ton depuis A1, accent, slide]
+const PAT_A = [[0,1,0],[0,0,0],[12,0,1],null,[0,0,0],[3,1,0],[0,0,0],[15,1,1],
+               [0,0,0],null,[7,0,0],[0,0,1],[10,1,0],[0,0,0],[12,0,1],[3,0,0]];
+const PAT_B = [[0,1,0],[0,0,0],[12,0,1],null,[0,0,0],[3,1,0],[0,0,0],[15,1,1],
+               [0,0,0],null,[7,0,0],[0,0,1],[5,1,0],[7,0,1],[12,0,0],[0,0,0]];
+
+function makeCurve(k) {
+  const n = 1024, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; c[i] = Math.tanh(x * k); }
+  return c;
+}
+
+const Engine = {
+  ctx: null, playing: false, startTime: 0, nextTime: 0, step: 0, timer: null, long: [],
+
+  init() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    const c = this.ctx = new AC();
+    this.master = c.createGain(); this.master.gain.value = 0;
+    const comp = c.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.knee.value = 8; comp.ratio.value = 4;
+    comp.attack.value = 0.003; comp.release.value = 0.2;
+    this.analyser = c.createAnalyser(); this.analyser.fftSize = 512; this.analyser.smoothingTimeConstant = 0.72;
+    this.freq = new Uint8Array(this.analyser.frequencyBinCount);
+    this.master.connect(comp); comp.connect(this.analyser); this.analyser.connect(c.destination);
+
+    // Bus "sidechain" : basse et nappes baissent à chaque kick
+    this.duck = c.createGain(); this.duck.connect(this.master);
+    this.hatBus = c.createGain(); this.hatBus.gain.value = 0.5; this.hatBus.connect(this.master);
+
+    // Bruit blanc (2 s) réutilisé pour hats, clap, snare, riser
+    const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    this.noise = buf;
+
+    // Voix acide monophonique (type 303) : saw -> lowpass résonant -> VCA -> saturation
+    const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 55;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 400; f.Q.value = 12;
+    const v = c.createGain(); v.gain.value = 0;
+    const sh = c.createWaveShaper(); sh.curve = makeCurve(2.2); sh.oversample = '2x';
+    const out = c.createGain(); out.gain.value = 0.2;
+    o.connect(f); f.connect(v); v.connect(sh); sh.connect(out); out.connect(this.duck); o.start();
+    this.acid = { o, f, v };
+    return true;
+  },
+
+  async start() {
+    if (!this.ctx && !this.init()) return false;
+    const c = this.ctx;
+    try { await c.resume(); } catch (e) { return false; }
+    this.step = 0;
+    this.nextTime = c.currentTime + 0.08;
+    this.startTime = this.nextTime;
+    const m = this.master.gain, now = c.currentTime;
+    m.cancelScheduledValues(now); m.setValueAtTime(m.value, now); m.linearRampToValueAtTime(0.85, now + 0.06);
+    this.playing = true;
+    this.pump();
+    this.timer = setInterval(() => this.pump(), 25);
+    return true;
+  },
+
+  stop() {
+    if (!this.ctx) return;
+    clearInterval(this.timer); this.timer = null; this.playing = false;
+    const c = this.ctx, now = c.currentTime, m = this.master.gain;
+    m.cancelScheduledValues(now); m.setValueAtTime(m.value, now); m.linearRampToValueAtTime(0, now + 0.25);
+    const vg = this.acid.v.gain; vg.cancelScheduledValues(now); vg.setTargetAtTime(0, now, 0.02);
+    this.long.forEach(n => { try { n.stop(now + 0.3); } catch (e) {} });
+    this.long = [];
+  },
+
+  // Ordonnanceur "lookahead" : programme les notes 120 ms à l'avance
+  pump() {
+    const c = this.ctx;
+    while (this.nextTime < c.currentTime + 0.12) {
+      this.schedule(this.step, this.nextTime);
+      this.nextTime += STEP; this.step++;
+    }
+  },
+
+  // Position musicale actuelle (en doubles-croches), compensée de la latence de sortie
+  clockStep() {
+    const c = this.ctx, lat = c.outputLatency || c.baseLatency || 0;
+    return (c.currentTime - lat - this.startTime) / STEP;
+  },
+
+  schedule(step, t) {
+    const bar = Math.floor(step / 16), s16 = step % 16, A = arrangement(bar);
+    if (A.kick && s16 % 4 === 0) this.kick(t);
+    if (A.hat) {
+      if (s16 % 4 === 2) this.hat(t, true, 0.5);
+      else this.hat(t, false, s16 % 2 ? 0.26 : 0.16);
+    }
+    if (A.clap && (s16 === 4 || s16 === 12)) this.clap(t);
+    if (A.bass) this.acidStep(step, t, A);
+    if (A.sec === 'break' && A.s === 24 && s16 === 0) this.pad(t, 6 * 16 * STEP);
+    if (bar >= 28 && A.s === 28 && s16 === 0) this.riser(t, 4 * 16 * STEP);
+    if (A.roll) {
+      const last = A.s === 31, every = last ? (s16 < 8 ? 2 : 1) : (s16 < 8 ? 4 : 2);
+      if (s16 % every === 0) this.snare(t, last ? 0.3 + 0.5 * s16 / 16 : 0.28);
+    }
+    if (isDropStart(bar) && s16 === 0) this.crash(t);
+  },
+
+  noiseHit(t, type, freq, gain, dur, dest, q) {
+    const c = this.ctx, s = c.createBufferSource(); s.buffer = this.noise;
+    const fl = c.createBiquadFilter(); fl.type = type; fl.frequency.value = freq; fl.Q.value = q || 0.7;
+    const g = c.createGain();
+    g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.connect(fl); fl.connect(g); g.connect(dest);
+    s.start(t, Math.random() * 0.4, dur + 0.03);
+  },
+
+  kick(t) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(180, t);
+    o.frequency.exponentialRampToValueAtTime(52, t + 0.07);
+    o.frequency.exponentialRampToValueAtTime(41, t + 0.35);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(1, t + 0.003);
+    g.gain.setValueAtTime(1, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.48);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + 0.5);
+    this.noiseHit(t, 'highpass', 3000, 0.22, 0.012, this.master);           // attaque "click"
+    const d = this.duck.gain;
+    d.cancelScheduledValues(t); d.setValueAtTime(0.25, t); d.setTargetAtTime(1, t + 0.03, 0.06);
+  },
+
+  hat(t, open, vel) { this.noiseHit(t, 'highpass', open ? 7000 : 8500, vel, open ? 0.16 : 0.035, this.hatBus); },
+
+  clap(t) {
+    const c = this.ctx, s = c.createBufferSource(); s.buffer = this.noise;
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 0.9;
+    const g = c.createGain(), gg = g.gain;
+    gg.setValueAtTime(0.0001, t);
+    for (let k = 0; k < 3; k++) {
+      const tk = t + k * 0.011;
+      gg.setValueAtTime(0.5, tk); gg.exponentialRampToValueAtTime(0.06, tk + 0.009);
+    }
+    gg.setValueAtTime(0.45, t + 0.034); gg.exponentialRampToValueAtTime(0.001, t + 0.22);
+    s.connect(bp); bp.connect(g); g.connect(this.master);
+    s.start(t, Math.random() * 0.5, 0.26);
+  },
+
+  snare(t, vel) {
+    this.noiseHit(t, 'bandpass', 1900, vel, 0.12, this.master, 0.6);
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(150, t + 0.08);
+    g.gain.setValueAtTime(vel * 0.6, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + 0.1);
+  },
+
+  acidStep(step, t, A) {
+    const s16 = step % 16, bar = Math.floor(step / 16);
+    const pat = bar % 2 ? PAT_B : PAT_A, n = pat[s16];
+    if (!n) return;
+    const { o, f, v } = this.acid;
+    const freq = 55 * Math.pow(2, n[0] / 12), acc = n[1], slide = n[2];
+    const next = pat[(s16 + 1) % 16], nextSlide = next && next[2];
+
+    if (slide) o.frequency.setTargetAtTime(freq, t, 0.025);
+    else o.frequency.setValueAtTime(freq, t);
+
+    // Fréquence de coupure : balayage lent sur 8 mesures, montée pendant breakdown / build
+    let base = 220 + 1400 * (0.5 - 0.5 * Math.cos((step % 128) / 128 * TAU));
+    if (A.sec === 'break') base = 200 + 1300 * ((A.s - 24 + s16 / 16) / 6);
+    if (A.sec === 'build') base = 1500 + 1500 * ((A.s - 30 + s16 / 16) / 2);
+    const peak = Math.min(base + (acc ? 3800 : 1800), 9000);
+    f.frequency.cancelScheduledValues(t);
+    f.frequency.setValueAtTime(peak, t);
+    f.frequency.setTargetAtTime(base, t + 0.004, acc ? 0.07 : 0.1);
+    f.Q.setValueAtTime(acc ? 17 : 12, t);
+
+    const lvl = acc ? 0.95 : 0.6;
+    v.gain.cancelScheduledValues(t);
+    if (!slide) { v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(lvl, t + 0.004); }
+    else v.gain.setTargetAtTime(lvl, t, 0.01);
+    if (!nextSlide) v.gain.setTargetAtTime(0, t + STEP * 0.7, 0.012);
+  },
+
+  pad(t, dur) {
+    const c = this.ctx;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 2;
+    f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(2600, t + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.055, t + 1.5);
+    g.gain.setValueAtTime(0.055, t + dur - 1); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    f.connect(g); g.connect(this.duck);
+    [57, 60, 64, 67].forEach(m => {                                  // La mineur 7 (A C E G)
+      [-9, 9].forEach(det => {
+        const o = c.createOscillator(); o.type = 'sawtooth';
+        o.frequency.value = 440 * Math.pow(2, (m - 69) / 12); o.detune.value = det;
+        o.connect(f); o.start(t); o.stop(t + dur + 0.05);
+        this.long.push(o);
+      });
+    });
+    this.trimLong();
+  },
+
+  riser(t, dur) {
+    const c = this.ctx, s = c.createBufferSource(); s.buffer = this.noise; s.loop = true;
+    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 3;
+    f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(9000, t + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.2, t + dur * 0.97); g.gain.linearRampToValueAtTime(0, t + dur);
+    s.connect(f); f.connect(g); g.connect(this.master); s.start(t); s.stop(t + dur + 0.02);
+    this.long.push(s); this.trimLong();
+  },
+
+  crash(t) { this.noiseHit(t, 'highpass', 5000, 0.3, 1.4, this.master, 0.5); },
+
+  trimLong() { if (this.long.length > 40) this.long.splice(0, this.long.length - 40); }
+};
+
+// Onglet masqué : on met le son en pause (l'horloge audio est gelée, la reprise est parfaite)
+document.addEventListener('visibilitychange', () => {
+  if (!Engine.ctx || !Engine.playing) return;
+  if (document.hidden) Engine.ctx.suspend(); else Engine.ctx.resume();
+});
+
+/* =========================================================
+   Scène Canvas 2D
+   ========================================================= */
+const cvs = $('#scene');
+const g = cvs.getContext('2d', { alpha: false });
+let W = 0, H = 0, DPR = 1, quality = 1;
+let L = null;                       // mise en page de la scène
+const layers = {};
+let crowd = [], smoke = [], co2 = [], emitters = [], heads = [];
+let laserGrad = [], sheetGrad = [], headGrad = [], LEN = 1000, HLEN = 800;
+let ledColors = [];
+const hasRoundRect = typeof g.roundRect === 'function';
+
+function makeLayer(w, h) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w * DPR)); c.height = Math.max(1, Math.round(h * DPR));
+  const x = c.getContext('2d'); x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return { c, x };
+}
+
+/* Sprites de fumée (indépendants de la résolution) */
+const sprites = [LAVENDER, [0, 190, 255], [255, 60, 200], WHITE].map(col => {
+  const s = 128, cv = document.createElement('canvas'); cv.width = cv.height = s;
+  const x = cv.getContext('2d');
+  for (let i = 0; i < 8; i++) {
+    const r = s * (0.16 + Math.random() * 0.22);
+    const px = s / 2 + (Math.random() - 0.5) * s * 0.36, py = s / 2 + (Math.random() - 0.5) * s * 0.24;
+    const gr = x.createRadialGradient(px, py, 0, px, py, r);
+    gr.addColorStop(0, rgba(col, 0.22)); gr.addColorStop(1, rgba(col, 0));
+    x.fillStyle = gr; x.fillRect(0, 0, s, s);
+  }
+  return cv;
+});
+
+function computeLayout() {
+  const mobile = W < 700;
+  const cx = W / 2;
+  const boothW = clamp(W * 0.26, 170, 460);
+  const boothH = clamp(H * 0.11, 58, 120);
+  const boothTop = H * (mobile ? 0.67 : 0.655);
+  const stageBack = boothTop - boothH * 0.35;
+  const stageFront = boothTop + boothH * 1.05;
+  const wallW = clamp(W * 0.44, 240, 900);
+  const wallH = clamp(H * 0.2, 90, 260);
+  const wallBottom = boothTop + boothH * 0.2;
+  const wallTop = wallBottom - wallH;
+  const trussY = Math.max(66, H * 0.11);
+  const spW = clamp(W * 0.085, 34, 120);
+  return { mobile, cx, boothW, boothH, boothTop, stageBack, stageFront, wallW, wallH, wallTop, wallBottom,
+           wallX: cx - wallW / 2, trussY, spW };
+}
+
+function resize() {
+  W = window.innerWidth; H = window.innerHeight;
+  const cap = W < 700 ? 1.5 : 1.75;
+  DPR = Math.max(0.6, Math.min(window.devicePixelRatio || 1, cap) * quality);
+  cvs.width = Math.round(W * DPR); cvs.height = Math.round(H * DPR);
+  L = computeLayout();
+  LEN = Math.hypot(W, H) * 1.15;
+  HLEN = H * 0.95;
+  buildGradients(); buildEmitters(); buildBackground(); buildBooth(); buildVignette();
+  buildCrowd(); buildSmoke();
+}
+
+function buildGradients() {
+  laserGrad = []; sheetGrad = []; headGrad = [];
+  [...PALETTE, LAVENDER].forEach((c, i) => {
+    let gr = g.createLinearGradient(0, 0, LEN, 0);
+    gr.addColorStop(0, rgba(c, 1)); gr.addColorStop(0.12, rgba(c, 0.75)); gr.addColorStop(1, rgba(c, 0));
+    laserGrad[i] = gr;
+    gr = g.createRadialGradient(0, 0, 0, 0, 0, LEN * 0.75);
+    gr.addColorStop(0, rgba(c, 0.55)); gr.addColorStop(1, rgba(c, 0));
+    sheetGrad[i] = gr;
+    gr = g.createLinearGradient(0, 0, HLEN, 0);
+    gr.addColorStop(0, rgba(c, 0.55)); gr.addColorStop(0.5, rgba(c, 0.16)); gr.addColorStop(1, rgba(c, 0));
+    headGrad[i] = gr;
+  });
+  // Couleurs des LED du mur (dégradé vertical cyan -> magenta -> jaune)
+  ledColors = [];
+  for (let r = 0; r < 14; r++) {
+    const t = r / 13;
+    const a = t < 0.6 ? PALETTE[0] : PALETTE[1], b = t < 0.6 ? PALETTE[1] : PALETTE[3];
+    const k = t < 0.6 ? t / 0.6 : (t - 0.6) / 0.4;
+    ledColors.push(`rgb(${lerp(a[0], b[0], k) | 0},${lerp(a[1], b[1], k) | 0},${lerp(a[2], b[2], k) | 0})`);
+  }
+}
+
+function buildEmitters() {
+  const { cx, boothTop, boothH, wallW, trussY } = L;
+  const up = -Math.PI / 2, dn = Math.PI / 2;
+  emitters = [
+    { id: 0, x: cx, y: boothTop + 4, base: up, n: 9, spread: 1.55, sweep: 0.45, col: 0, dir: 1 },
+    { id: 1, x: cx - wallW * 0.5 - 16, y: boothTop + boothH * 0.3, base: up - 0.32, n: 6, spread: 0.95, sweep: 0.55, col: 1, dir: -1 },
+    { id: 2, x: cx + wallW * 0.5 + 16, y: boothTop + boothH * 0.3, base: up + 0.32, n: 6, spread: 0.95, sweep: 0.55, col: 2, dir: 1 },
+    { id: 3, x: cx - W * 0.29, y: trussY + 12, base: dn - 0.32, n: 5, spread: 0.7, sweep: 0.5, col: 3, dir: 1, down: true },
+    { id: 4, x: cx + W * 0.29, y: trussY + 12, base: dn + 0.32, n: 5, spread: 0.7, sweep: 0.5, col: 1, dir: -1, down: true },
+  ];
+  const nH = L.mobile ? 4 : 6;
+  heads = [];
+  for (let i = 0; i < nH; i++) heads.push({ x: W * (0.12 + 0.76 * i / (nH - 1)), y: L.trussY + 18, i });
+}
+
+function trussH(x, x0, x1, y, h) {
+  x.beginPath();
+  x.moveTo(x0, y); x.lineTo(x1, y); x.moveTo(x0, y + h); x.lineTo(x1, y + h);
+  for (let px = x0; px < x1; px += h) { x.moveTo(px, y + h); x.lineTo(px + h / 2, y); x.lineTo(px + h, y + h); }
+  x.stroke();
+}
+function trussV(x, cxp, y0, y1, w) {
+  x.beginPath();
+  x.moveTo(cxp - w / 2, y0); x.lineTo(cxp - w / 2, y1); x.moveTo(cxp + w / 2, y0); x.lineTo(cxp + w / 2, y1);
+  for (let py = y0; py < y1; py += w) { x.moveTo(cxp - w / 2, py); x.lineTo(cxp + w / 2, py + w / 2); x.lineTo(cxp - w / 2, py + w); }
+  x.stroke();
+}
+
+function speaker(x, px, py, w, h) {
+  x.fillStyle = '#0a0612'; x.fillRect(px, py, w, h);
+  x.strokeStyle = '#1f1731'; x.lineWidth = 2; x.strokeRect(px + 1, py + 1, w - 2, h - 2);
+  const n = Math.max(2, Math.round(h / w));
+  for (let i = 0; i < n; i++) {
+    const cy = py + h * (i + 0.5) / n, r = Math.min(w, h / n) * 0.36;
+    x.beginPath(); x.arc(px + w / 2, cy, r, 0, TAU); x.stroke();
+    x.beginPath(); x.arc(px + w / 2, cy, r * 0.35, 0, TAU); x.fillStyle = '#140d22'; x.fill();
+  }
+}
+
+function buildBackground() {
+  const l = layers.bg = makeLayer(W, H), x = l.x;
+  // Mur de l'entrepôt
+  let gr = x.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, '#040209'); gr.addColorStop(0.5, '#0d0619'); gr.addColorStop(1, '#030106');
+  x.fillStyle = gr; x.fillRect(0, 0, W, H);
+  // Piliers et fenêtres industrielles (très discrets)
+  const nP = Math.max(3, Math.ceil(W / 220));
+  for (let i = 0; i <= nP; i++) {
+    const px = i * W / nP;
+    x.fillStyle = 'rgba(255,255,255,0.022)'; x.fillRect(px - 9, 0, 18, L.stageBack);
+    if (i < nP) {
+      x.strokeStyle = 'rgba(140,110,230,0.05)'; x.lineWidth = 1;
+      const wx = px + 30, ww = W / nP - 60, wy = H * 0.17, wh = H * 0.12;
+      if (ww > 30) {
+        x.strokeRect(wx, wy, ww, wh);
+        for (let k = 1; k < 4; k++) { x.beginPath(); x.moveTo(wx + ww * k / 4, wy); x.lineTo(wx + ww * k / 4, wy + wh); x.stroke(); }
+        x.beginPath(); x.moveTo(wx, wy + wh / 2); x.lineTo(wx + ww, wy + wh / 2); x.stroke();
+      }
+    }
+  }
+  // Charpente du toit
+  x.strokeStyle = 'rgba(150,120,255,0.05)'; x.lineWidth = 2;
+  trussH(x, 0, W, H * 0.02, H * 0.05);
+  // Halo derrière la scène
+  const gy = L.wallTop + L.wallH * 0.5;
+  gr = x.createRadialGradient(L.cx, gy, 10, L.cx, gy, Math.max(W, H) * 0.65);
+  gr.addColorStop(0, 'rgba(120,40,210,0.38)'); gr.addColorStop(0.5, 'rgba(60,20,120,0.12)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, W, H);
+  // Plancher de scène en perspective
+  x.beginPath();
+  x.moveTo(W * 0.1, L.stageBack); x.lineTo(W * 0.9, L.stageBack);
+  x.lineTo(W * 1.04, L.stageFront); x.lineTo(-W * 0.04, L.stageFront); x.closePath();
+  gr = x.createLinearGradient(0, L.stageBack, 0, L.stageFront);
+  gr.addColorStop(0, '#170c27'); gr.addColorStop(1, '#07030c');
+  x.fillStyle = gr; x.fill();
+  x.strokeStyle = 'rgba(255,255,255,0.04)'; x.lineWidth = 1; x.beginPath();
+  for (let i = -6; i <= 6; i++) {
+    x.moveTo(L.cx + i * W * 0.067, L.stageBack); x.lineTo(L.cx + i * W * 0.095, L.stageFront);
+  }
+  x.stroke();
+  x.strokeStyle = 'rgba(255,31,209,0.5)'; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(-W * 0.04, L.stageFront); x.lineTo(W * 1.04, L.stageFront); x.stroke();
+  // Façades son
+  const { spW } = L, spH = spW * 2.6, gap = Math.max(14, W * 0.02);
+  const lx = L.wallX - gap - spW, rx = L.wallX + L.wallW + gap;
+  if (lx > 0) { speaker(x, lx, L.stageBack - spH * 0.9, spW, spH); speaker(x, rx, L.stageBack - spH * 0.9, spW, spH); }
+  // Line arrays suspendus
+  x.fillStyle = '#0b0714';
+  for (const sx of [W * 0.06, W * 0.94 - spW * 0.8]) {
+    for (let k = 0; k < 6; k++) {
+      x.save(); x.translate(sx + spW * 0.4, L.trussY + 30 + k * spW * 0.32); x.rotate((k * 0.03) * (sx < W / 2 ? -1 : 1));
+      x.fillRect(-spW * 0.4, 0, spW * 0.8, spW * 0.28); x.restore();
+    }
+  }
+  // Structure : pont supérieur + tours
+  x.strokeStyle = '#2c2142'; x.lineWidth = 2;
+  trussH(x, 0, W, L.trussY - 11, 22);
+  trussV(x, W * 0.035, L.trussY + 11, L.stageBack, 18);
+  trussV(x, W * 0.965, L.trussY + 11, L.stageBack, 18);
+  // Lyres (corps)
+  x.fillStyle = '#120b1f';
+  for (const h of heads) { x.fillRect(h.x - 9, h.y - 8, 18, 10); x.fillRect(h.x - 6, h.y + 1, 12, 9); }
+  for (const e of emitters) if (e.down) { x.fillRect(e.x - 12, e.y - 6, 24, 9); }
+}
+
+function buildBooth() {
+  const l = layers.booth = makeLayer(W, H), x = l.x;
+  const { cx, boothW: bw, boothH: bh, boothTop: bt } = L;
+  // Façade trapézoïdale
+  x.beginPath();
+  x.moveTo(cx - bw / 2, bt); x.lineTo(cx + bw / 2, bt);
+  x.lineTo(cx + bw * 0.46, bt + bh); x.lineTo(cx - bw * 0.46, bt + bh); x.closePath();
+  const gr = x.createLinearGradient(0, bt, 0, bt + bh);
+  gr.addColorStop(0, '#150c22'); gr.addColorStop(1, '#050208');
+  x.fillStyle = gr; x.fill();
+  x.strokeStyle = 'rgba(255,255,255,0.08)'; x.lineWidth = 1; x.stroke();
+  // Plateau + matériel
+  x.fillStyle = '#1d1430'; x.fillRect(cx - bw / 2 - 4, bt - 5, bw + 8, 6);
+  x.fillStyle = '#0d0818';
+  const dw = bw * 0.26, dh = bh * 0.12;
+  x.fillRect(cx - bw * 0.42, bt - 5 - dh, dw, dh);
+  x.fillRect(cx + bw * 0.42 - dw, bt - 5 - dh, dw, dh);
+  x.fillRect(cx - bw * 0.1, bt - 5 - dh * 1.2, bw * 0.2, dh * 1.2);
+  // Lettrage gravé
+  x.font = `900 ${Math.round(bh * 0.26)}px "Arial Black", Arial, sans-serif`;
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.strokeStyle = 'rgba(255,255,255,0.07)'; x.lineWidth = 1;
+  x.strokeText('TECHNO12', cx, bt + bh * 0.58);
+}
+
+function buildVignette() {
+  const l = layers.vig = makeLayer(W, H), x = l.x;
+  const gr = x.createRadialGradient(W / 2, H * 0.5, Math.min(W, H) * 0.3, W / 2, H * 0.5, Math.max(W, H) * 0.8);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.75)');
+  x.fillStyle = gr; x.fillRect(0, 0, W, H);
+}
+
+function buildCrowd() {
+  const baseU = Math.min(H * 0.21, W * 0.42, 240);
+  const defs = [
+    { y: H * 0.845, s: 0.62, col: '#1e1132' },
+    { y: H * 0.915, s: 0.82, col: '#10071b' },
+    { y: H * 1.0, s: 1.08, col: '#040107' },
+  ];
+  crowd = defs.map((d, ri) => {
+    const u = baseU * d.s, gap = u * 0.44, n = Math.ceil(W / gap) + 2, people = [];
+    for (let i = 0; i < n; i++) {
+      const r = Math.random();
+      let pose = r < 0.36 ? 'V' : r < 0.58 ? 'pump' : r < 0.7 ? 'clap' : r < 0.82 ? 'phone' : 'down';
+      if (ri === 2 && pose === 'phone') pose = 'V';
+      people.push({
+        x: (i - 0.5) * gap + (Math.random() - 0.5) * gap * 0.5,
+        dy: (Math.random() - 0.5) * u * 0.08,
+        off: Math.random() * 0.14, amp: 0.6 + Math.random() * 0.8,
+        eager: Math.random() * 0.7, jumper: Math.random() < 0.35, pose,
+        hs: 0.9 + Math.random() * 0.18, ph: Math.random() * TAU
+      });
+    }
+    return { ...d, u, people };
+  });
+}
+
+function buildSmoke() {
+  const n = L.mobile ? 12 : 20;
+  smoke = [];
+  for (let i = 0; i < n; i++) {
+    smoke.push({
+      x: Math.random() * W, y0: lerp(L.wallTop, H * 0.92, Math.random()),
+      r: Math.max(120, lerp(W * 0.12, W * 0.3, Math.random())),
+      vx: (Math.random() - 0.5) * 14, ph: Math.random() * TAU, spr: i % 3,
+      a: 0.5 + Math.random() * 0.5, front: i % 4 === 0
+    });
+  }
+  co2 = [];
+}
+
+/* ---------- Dessin des éléments ---------- */
+
+function drawWall(A, beatF, kick, energy, colIdx) {
+  const { wallX: x0, wallTop: y0, wallW: w, wallH: h } = L;
+  g.fillStyle = '#05020a'; g.fillRect(x0 - 7, y0 - 7, w + 14, h + 14);
+  g.fillStyle = '#0b0614'; g.fillRect(x0, y0, w, h);
+  const cols = 32, rows = 14, cw = w / cols, ch = h / rows, N = spectrum.length;
+  g.globalCompositeOperation = 'lighter';
+  g.globalAlpha = 0.35 + 0.45 * energy;
+  if (A.sec === 'break') {
+    // Anneaux concentriques lents
+    const cxw = x0 + w / 2, cyw = y0 + h / 2, R = ((beatF / 2) % 1) * w * 0.6;
+    for (let r = 0; r < rows; r++) {
+      g.fillStyle = ledColors[r];
+      for (let c = 0; c < cols; c++) {
+        const px = x0 + c * cw + cw / 2, py = y0 + r * ch + ch / 2;
+        const d = Math.abs(Math.hypot(px - cxw, (py - cyw) * 2) - R);
+        if (d < cw * 1.6) g.fillRect(px - cw / 2 + 1, py - ch / 2 + 1, cw - 2, ch - 2);
+      }
+    }
+  } else {
+    // Spectre en miroir (basses au centre)
+    const lit = [];
+    for (let c = 0; c < cols; c++) {
+      const d = Math.abs(c - (cols - 1) / 2) / (cols / 2);
+      lit[c] = Math.round(clamp(spectrum[Math.min(N - 1, (d * (N - 1)) | 0)] * 1.1, 0, 1) * rows);
+    }
+    for (let r = 0; r < rows; r++) {
+      g.fillStyle = ledColors[r];
+      for (let c = 0; c < cols; c++) if (lit[c] > r) g.fillRect(x0 + c * cw + 1, y0 + h - (r + 1) * ch + 1, cw - 2, ch - 2);
+    }
+  }
+  // Ligne de balayage
+  g.globalAlpha = 0.12 + 0.2 * kick * energy;
+  g.fillStyle = rgba(PALETTE[colIdx], 1);
+  const sy = y0 + ((beatF / 4) % 1) * h;
+  g.fillRect(x0, sy, w, Math.max(2, ch * 0.5));
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function drawHeads(beatF, energy, kick, A, colIdx, motion) {
+  g.globalCompositeOperation = 'lighter';
+  const n = heads.length;
+  for (const h of heads) {
+    const i = h.i, side = i < n / 2 ? -1 : 1;
+    const a = Math.PI / 2 + side * 0.18 + Math.sin(beatF * Math.PI / 8 * motion + i * 0.9) * 0.6 * (0.4 + 0.6 * energy);
+    const ci = A.sec === 'drop' ? (i + colIdx) % 4 : A.sec === 'build' ? 4 : (i % 2 ? 4 : colIdx);
+    const alpha = (0.08 + 0.2 * energy) * (A.sec === 'drop' ? 0.7 + 0.3 * kick : 1);
+    g.save(); g.translate(h.x, h.y + 6); g.rotate(a);
+    g.globalAlpha = alpha; g.fillStyle = headGrad[ci];
+    g.beginPath(); g.moveTo(0, -4); g.lineTo(HLEN, -HLEN * 0.12); g.lineTo(HLEN, HLEN * 0.12); g.lineTo(0, 4); g.closePath(); g.fill();
+    g.restore();
+    g.globalAlpha = 0.6 + 0.4 * energy; g.fillStyle = rgba(ci === 4 ? LAVENDER : PALETTE[ci], 1);
+    g.beginPath(); g.arc(h.x, h.y + 6, 4, 0, TAU); g.fill();
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function laserOffset(e, pat, beatF, motion) {
+  switch (pat) {
+    case 1: return { off: Math.sin(beatF * Math.PI / 2 * motion) * e.sweep * e.dir, sm: 1 };          // ciseaux
+    case 2: return { off: 0, sm: 0.3 + 0.7 * Math.abs(Math.sin(beatF * Math.PI / 4 * motion + e.id)) };  // éventail qui respire
+    case 3: {                                                                                     // sauts sur le temps
+      const b = beatF * motion, k = Math.floor(b);
+      const a0 = (hash(k * 7 + e.id) - 0.5) * 2 * e.sweep, a1 = (hash((k + 1) * 7 + e.id) - 0.5) * 2 * e.sweep;
+      const fr = clamp((b - k) / 0.18, 0, 1);
+      return { off: lerp(a0, a1, fr * fr * (3 - 2 * fr)), sm: 1 };
+    }
+    default: return { off: Math.sin(beatF * Math.PI / 4 * motion + e.id * 1.3) * e.sweep, sm: 1 };    // balayage
+  }
+}
+
+function drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion) {
+  g.globalCompositeOperation = 'lighter';
+  const bar = Math.floor(beatF / 4);
+  let pat = playing ? Math.floor(bar / 4) % 4 : 0;
+  if (A.sec === 'break') pat = 2;
+  const tempo = playing ? 1 : 0.35;
+  // Hachage rythmique (petite surface : pas de flash plein écran)
+  let gate = 1;
+  const frac = stepF % 1;
+  if (!RM && A.sec === 'build') gate = frac < 0.5 ? 1 : 0.2;
+  else if (!RM && A.sec === 'drop' && pat === 3) gate = 0.55 + 0.45 * (1 - frac);
+
+  for (const e of emitters) {
+    let vis = 1;
+    if (e.down) vis = clamp((energy - 0.5) * 2.5, 0, 1);
+    if (vis <= 0.01) continue;
+    const ci = playing ? (e.col + Math.floor(bar / 2)) % 4 : (e.col + colIdx) % 4;
+    const { off, sm } = laserOffset(e, pat, beatF * tempo, motion);
+    const n = Math.max(1, Math.round(e.n * (0.35 + 0.65 * energy)));
+    const spread = e.spread * (0.45 + 0.6 * energy) * sm;
+    const center = e.base + off;
+    const w = (0.7 + 2.3 * energy) * (1 + kick * 0.7 * energy);
+    const alpha = (0.25 + 0.75 * energy) * vis * gate;
+    g.save(); g.translate(e.x, e.y);
+    // Nappe lumineuse entre les faisceaux
+    if (energy > 0.45 && n > 1) {
+      g.globalAlpha = 0.07 * energy * alpha; g.fillStyle = sheetGrad[ci];
+      g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, LEN, center - spread / 2, center + spread / 2); g.closePath(); g.fill();
+    }
+    g.fillStyle = laserGrad[ci];
+    for (let i = 0; i < n; i++) {
+      const a = center + (n === 1 ? 0 : (i / (n - 1) - 0.5) * spread);
+      g.rotate(a);
+      g.globalAlpha = alpha * 0.16;
+      g.beginPath(); g.moveTo(0, -w * 1.5); g.lineTo(LEN, -w * 7); g.lineTo(LEN, w * 7); g.lineTo(0, w * 1.5); g.fill();
+      g.globalAlpha = alpha * 0.95;
+      g.beginPath(); g.moveTo(0, -w * 0.3); g.lineTo(LEN, -w * 0.9); g.lineTo(LEN, w * 0.9); g.lineTo(0, w * 0.3); g.fill();
+      g.rotate(-a);
+    }
+    // Point d'émission
+    g.globalAlpha = alpha; g.fillStyle = rgba(PALETTE[ci], 1);
+    g.beginPath(); g.arc(0, 0, 2 + w, 0, TAU); g.fill();
+    g.restore();
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function drawSmoke(dt, t, energy, flash, colIdx, front, motion) {
+  g.globalCompositeOperation = 'lighter';
+  for (const p of smoke) {
+    if (p.front !== front) continue;
+    p.x += p.vx * dt * motion;
+    if (p.x < -p.r) p.x = W + p.r; else if (p.x > W + p.r) p.x = -p.r;
+    const y = p.y0 + Math.sin(t * 0.25 + p.ph) * 12;
+    const spr = sprites[(p.spr + colIdx) % 3];
+    g.globalAlpha = p.a * (front ? 0.5 : 1) * (0.2 + 0.25 * energy + 0.3 * flash);
+    g.drawImage(spr, p.x - p.r, y - p.r * 0.6, p.r * 2, p.r * 1.2);
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+let co2Time = 0;
+function updateCO2(dt) {
+  if (co2Time > 0) {
+    co2Time -= dt;
+    const k = Math.round(dt * (RM ? 25 : 70));
+    for (const side of [-1, 1]) for (let i = 0; i < k; i++) {
+      co2.push({
+        x: L.cx + side * (L.wallW * 0.5 + 18) + (Math.random() - 0.5) * 8, y: L.boothTop + L.boothH * 0.2,
+        vx: (Math.random() - 0.5) * 50 + side * 15, vy: -(H * 0.9 + Math.random() * H * 0.35),
+        life: 1, r: 20 + Math.random() * 25
+      });
+    }
+    if (co2.length > 320) co2.splice(0, co2.length - 320);
+  }
+  if (!co2.length) return;
+  g.globalCompositeOperation = 'lighter';
+  for (let i = co2.length - 1; i >= 0; i--) {
+    const p = co2[i];
+    p.vy *= Math.max(0, 1 - dt * 2.4); p.x += p.vx * dt; p.y += p.vy * dt; p.r += dt * 130; p.life -= dt * 0.85;
+    if (p.life <= 0) { co2.splice(i, 1); continue; }
+    g.globalAlpha = p.life * 0.32;
+    g.drawImage(sprites[3], p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
+  const d = L.boothH * 1.25, top = L.boothTop;
+  const col = PALETTE[colIdx];
+  const cx = L.cx + Math.sin(beatF * Math.PI / 2) * d * 0.03 * motion;          // balancement
+  const nod = A.kick ? kick : 0.5 + 0.5 * Math.sin(beatF * Math.PI);           // hochement de tête
+  const amp = (0.35 + energy) * motion;
+  const shY = top - d * 0.4 + nod * d * 0.025 * amp;                           // ligne d'épaules
+  const neckY = shY - d * 0.06;
+  const hx = cx + Math.sin(beatF * Math.PI / 2 + 0.6) * d * 0.012 * motion;
+  const hy = neckY - d * 0.19 + nod * d * 0.045 * amp;                         // la tête plonge sur le kick
+  const tilt = Math.sin(beatF * Math.PI / 2) * 0.1 * motion;
+
+  // Poses : main gauche au casque (4 mesures sur 8) ou sur la platine ; main droite au mixer ou levée au drop
+  const ear = !playing || bar % 8 < 4;
+  const raise = playing && A.sec === 'drop' && bar % 8 === 0 && (beatF % 4) < 3;
+  const lsx = cx - d * 0.33, rsx = cx + d * 0.33, sy = shY + d * 0.05;
+  let lex, ley, lhx, lhy, rex, rey, rhx, rhy;
+  if (ear) { lex = cx - d * 0.6; ley = shY + d * 0.06; lhx = hx - d * 0.2; lhy = hy + d * 0.03; }
+  else {
+    const scr = Math.sin(beatF * Math.PI * 2) * d * 0.06 * motion;
+    lex = cx - d * 0.58; ley = shY + d * 0.3; lhx = cx - d * 0.6 + scr; lhy = top - d * 0.05;
+  }
+  if (raise) { rex = cx + d * 0.58; rey = shY - d * 0.22; rhx = cx + d * 0.5; rhy = shY - d * 0.72 + kick * d * 0.08; }
+  else {
+    const knob = Math.sin(beatF * Math.PI * 0.5 + 1) * d * 0.07 * motion;
+    rex = cx + d * 0.5; rey = shY + d * 0.32; rhx = cx + d * 0.16 + knob; rhy = top - d * 0.04;
+  }
+
+  // Halo de contre-jour derrière le DJ
+  g.globalCompositeOperation = 'lighter';
+  const halo = g.createRadialGradient(hx, hy, 0, hx, hy, d * 0.9);
+  halo.addColorStop(0, rgba(col, 0.22 + 0.25 * kick * energy)); halo.addColorStop(1, rgba(col, 0));
+  g.fillStyle = halo; g.fillRect(hx - d, hy - d, d * 2, d * 2);
+  g.globalCompositeOperation = 'source-over';
+
+  const figure = (e) => {             // e = surépaisseur (passe de liseré) ou 0 (silhouette)
+    // Buste
+    g.beginPath();
+    g.moveTo(cx - d * 0.5, top + 6);
+    g.bezierCurveTo(cx - d * 0.49, shY + d * 0.25, cx - d * 0.47, shY + d * 0.02, cx - d * 0.31, shY - d * 0.01);
+    g.quadraticCurveTo(cx - d * 0.14, shY - d * 0.035, cx - d * 0.075, neckY);
+    g.lineTo(cx + d * 0.075, neckY);
+    g.quadraticCurveTo(cx + d * 0.14, shY - d * 0.035, cx + d * 0.31, shY - d * 0.01);
+    g.bezierCurveTo(cx + d * 0.47, shY + d * 0.02, cx + d * 0.49, shY + d * 0.25, cx + d * 0.5, top + 6);
+    g.closePath();
+    // Cou
+    g.moveTo(hx - d * 0.065, hy + d * 0.08); g.lineTo(hx + d * 0.065, hy + d * 0.08);
+    g.lineTo(cx + d * 0.08, neckY + d * 0.02); g.lineTo(cx - d * 0.08, neckY + d * 0.02); g.closePath();
+    // Tête + cheveux
+    g.moveTo(hx + d * 0.13, hy); g.ellipse(hx, hy, d * 0.13, d * 0.16, tilt, 0, TAU);
+    g.moveTo(hx + d * 0.14, hy - d * 0.06); g.ellipse(hx, hy - d * 0.06, d * 0.14, d * 0.11, tilt, 0, TAU);
+    // Mains
+    g.moveTo(lhx + d * 0.06, lhy); g.arc(lhx, lhy, d * 0.06, 0, TAU);
+    g.moveTo(rhx + d * 0.06, rhy); g.arc(rhx, rhy, d * 0.06, 0, TAU);
+    g.fill();
+    if (e) { g.lineWidth = e * 2; g.stroke(); }
+
+    // Bras (bras haut plus épais que l'avant-bras)
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    g.lineWidth = d * 0.15 + e * 2;
+    g.beginPath(); g.moveTo(lsx, sy); g.lineTo(lex, ley); g.moveTo(rsx, sy); g.lineTo(rex, rey); g.stroke();
+    g.lineWidth = d * 0.11 + e * 2;
+    g.beginPath(); g.moveTo(lex, ley); g.lineTo(lhx, lhy); g.moveTo(rex, rey); g.lineTo(rhx, rhy); g.stroke();
+
+    // Casque : arceau + écouteurs (le gauche est tenu contre l'oreille)
+    g.save(); g.translate(hx, hy); g.rotate(tilt);
+    g.lineWidth = d * 0.035 + e * 2;
+    g.beginPath(); g.ellipse(0, -d * 0.01, d * 0.165, d * 0.2, 0, Math.PI * 1.08, Math.PI * 1.92); g.stroke();
+    g.beginPath();
+    g.rect(d * 0.12 - e, -d * 0.04 - e, d * 0.07 + e * 2, d * 0.11 + e * 2);
+    g.rect(-d * 0.19 - e, -d * 0.04 - e, d * 0.07 + e * 2, d * 0.11 + e * 2);
+    g.fill();
+    g.restore();
+  };
+
+  // Passe 1 : liseré lumineux fin (contre-jour)
+  g.fillStyle = g.strokeStyle = rgba(col, 0.45 + 0.35 * energy);
+  figure(1.6);
+  // Passe 2 : silhouette noire
+  g.fillStyle = g.strokeStyle = '#030106';
+  figure(0);
+  // Petit reflet sur l'écouteur droit
+  g.globalCompositeOperation = 'lighter';
+  g.globalAlpha = 0.5 + 0.5 * kick * energy;
+  g.fillStyle = rgba(PALETTE[(colIdx + 1) % 4], 1);
+  g.save(); g.translate(hx, hy); g.rotate(tilt);
+  g.fillRect(d * 0.17, -d * 0.02, d * 0.015, d * 0.06);
+  g.restore();
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function drawBoothLights(stepF, kick, energy, colIdx) {
+  const { cx, boothW: bw, boothH: bh, boothTop: bt } = L;
+  const col = PALETTE[colIdx];
+  g.globalCompositeOperation = 'lighter';
+  g.globalAlpha = 0.45 + 0.55 * kick * energy;
+  g.fillStyle = rgba(col, 1); g.fillRect(cx - bw / 2, bt + 3, bw, 3);
+  g.globalAlpha = 0.12 + 0.2 * kick * energy; g.fillRect(cx - bw / 2, bt, bw, 12);
+  // Lettrage rétro-éclairé
+  g.globalAlpha = 0.18 + 0.45 * kick * energy;
+  g.font = `900 ${Math.round(bh * 0.26)}px "Arial Black", Arial, sans-serif`;
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = rgba(PALETTE[(colIdx + 1) % 4], 1);
+  g.fillText('TECHNO12', cx, bt + bh * 0.58);
+  // LED des platines
+  const st = Math.floor(stepF);
+  for (let i = 0; i < 8; i++) {
+    g.globalAlpha = (st % 8 === i) ? 1 : 0.25;
+    g.fillStyle = i < 4 ? '#39ff14' : '#ff1fd1';
+    const x = i < 4 ? cx - bw * 0.4 + i * 6 : cx + bw * 0.22 + (i - 4) * 6;
+    g.fillRect(x, bt - 9, 3, 2);
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+function drawSpill(kick, energy, colIdx) {
+  const gr = g.createRadialGradient(L.cx, L.boothTop, 0, L.cx, L.boothTop, Math.max(W, H) * 0.75);
+  gr.addColorStop(0, rgba(PALETTE[colIdx], 0.12 + 0.28 * energy + 0.18 * kick * energy));
+  gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.globalCompositeOperation = 'lighter';
+  const y0 = L.boothTop + L.boothH;
+  g.fillStyle = gr; g.fillRect(0, y0, W, H - y0);
+  g.globalCompositeOperation = 'source-over';
+}
+
+const phones = [];
+function drawCrowd(beatF, kick, energy, motion) {
+  phones.length = 0;
+  const bf = beatF % 1;
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  for (let ri = 0; ri < crowd.length; ri++) {
+    const row = crowd[ri], u = row.u;
+    g.fillStyle = row.col; g.strokeStyle = row.col;
+    const jumpK = u * 0.085 * (0.12 + energy) * motion;
+    // Corps
+    g.beginPath();
+    for (const p of row.people) {
+      const ph = (bf + p.off) % 1; let b = Math.sin(Math.PI * ph); b *= b;
+      const big = p.jumper && energy > 0.8 ? 1.7 : 1;
+      p.j = b * jumpK * p.amp * big;
+      p.sx = p.x + Math.sin(beatF * Math.PI * 0.5 + p.ph) * u * 0.025 * motion;
+      p.sy = row.y + p.dy - p.j;
+      const hr = u * 0.105 * p.hs, hy = p.sy - u * 0.21 * p.hs;
+      g.moveTo(p.sx + hr, hy); g.arc(p.sx, hy, hr, 0, TAU);
+      const tx = p.sx - u * 0.18, ty = p.sy - u * 0.07, tw = u * 0.36, th = H - ty + 20;
+      if (hasRoundRect) g.roundRect(tx, ty, tw, th, u * 0.09); else g.rect(tx, ty, tw, th);
+      g.rect(p.sx - hr * 0.5, hy, hr, u * 0.16);
+    }
+    g.fill();
+    // Bras
+    g.lineWidth = u * 0.085;
+    g.beginPath();
+    for (const p of row.people) {
+      if (p.pose === 'down') continue;
+      const lift = clamp(p.eager + energy * 1.15 - 0.35, 0, 1);
+      const up = 0.08 * Math.sin(beatF * Math.PI + p.ph);
+      const upper = u * 0.27, fore = u * 0.25, shY = p.sy - u * 0.02;
+      for (const side of [-1, 1]) {
+        let t1, t2;
+        if (p.pose === 'V') { t1 = lerp(2.7, 0.42 + up, lift); t2 = t1 * 0.7 - 0.05; }
+        else if (p.pose === 'pump') {
+          if (side < 0) continue;
+          t1 = lerp(2.7, 0.3, lift); t2 = lerp(t1, 0.05 + (1 - kick) * 0.7, lift);
+        } else if (p.pose === 'clap') { t1 = lerp(2.7, 0.55, lift); t2 = lerp(t1, -0.4 + 0.3 * kick, lift); }
+        else { // phone
+          if (side < 0) continue;
+          t1 = lerp(2.7, 0.65, Math.max(lift, 0.65)); t2 = 0.15;
+        }
+        const sx = p.sx + side * u * 0.15;
+        const ex = sx + Math.sin(t1) * side * upper, ey = shY - Math.cos(t1) * upper;
+        const hx = ex + Math.sin(t2) * side * fore, hy = ey - Math.cos(t2) * fore;
+        g.moveTo(sx, shY); g.lineTo(ex, ey); g.lineTo(hx, hy);
+        if (p.pose === 'phone') phones.push(hx, hy, u);
+      }
+    }
+    g.stroke();
+  }
+  // Écrans de téléphones
+  if (phones.length) {
+    g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < phones.length; i += 3) {
+      const x = phones[i], y = phones[i + 1], u = phones[i + 2];
+      g.globalAlpha = 0.12; g.fillStyle = '#9fd8ff';
+      g.beginPath(); g.arc(x, y - u * 0.04, u * 0.12, 0, TAU); g.fill();
+      g.globalAlpha = 0.9; g.fillStyle = '#e6f4ff';
+      g.fillRect(x - u * 0.025, y - u * 0.09, u * 0.05, u * 0.085);
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+}
+
+/* =========================================================
+   Égaliseur (DOM) + spectre partagé
+   ========================================================= */
+const spectrum = new Float32Array(48);
+const eq = $('#eq'), eg = eq.getContext('2d');
+let eqGrad = null;
+function sizeEq() {
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  eq.width = 200 * d; eq.height = 40 * d; eg.setTransform(d, 0, 0, d, 0, 0);
+  eqGrad = eg.createLinearGradient(0, 40, 0, 0);
+  eqGrad.addColorStop(0, '#00f0ff'); eqGrad.addColorStop(0.6, '#ff1fd1'); eqGrad.addColorStop(1, '#ffe600');
+}
+function updateSpectrum(t, kick, playing) {
+  const N = spectrum.length;
+  if (playing && Engine.analyser) {
+    Engine.analyser.getByteFrequencyData(Engine.freq);
+    const bins = Engine.freq.length * 0.6;
+    for (let i = 0; i < N; i++) {
+      const lo = Math.floor(Math.pow(i / N, 2) * bins) + 1;
+      const hi = Math.max(lo + 1, Math.floor(Math.pow((i + 1) / N, 2) * bins) + 1);
+      let m = 0; for (let k = lo; k < hi; k++) if (Engine.freq[k] > m) m = Engine.freq[k];
+      spectrum[i] = Math.max(m / 255, spectrum[i] * 0.9);
+    }
+  } else {
+    for (let i = 0; i < N; i++) {
+      const v = 0.1 + 0.07 * Math.sin(t * 2.1 + i * 0.55) + 0.05 * Math.sin(t * 3.7 - i * 0.3) + kick * 0.22 * (1 - i / N);
+      spectrum[i] += (v - spectrum[i]) * 0.2;
+    }
+  }
+}
+function drawEq() {
+  eg.clearRect(0, 0, 200, 40);
+  const n = 20, bw = 200 / n;
+  eg.fillStyle = eqGrad;
+  for (let i = 0; i < n; i++) {
+    const v = spectrum[Math.floor(i * spectrum.length / n)];
+    const segs = Math.max(1, Math.round(clamp(v, 0, 1) * 10));
+    for (let s = 0; s < segs; s++) eg.fillRect(i * bw + 1.5, 40 - (s + 1) * 4 + 1, bw - 3, 3);
+  }
+}
+
+/* =========================================================
+   Boucle principale
+   ========================================================= */
+const titleEl = $('#title'), titleWrap = $('#titleWrap'), titleGlow = $('#titleGlow');
+let last = performance.now(), energy = 0.3, flash = 0, flashCol = WHITE, lastStep = -1, idleT0 = performance.now();
+let heroVisible = true, skipFrame = false, perfAcc = 0, perfN = 0, lastGlitch = 0;
+
+function glitch() {
+  if (RM) return;
+  const now = performance.now();
+  if (now - lastGlitch < 300) return;
+  lastGlitch = now;
+  titleEl.classList.remove('hit'); void titleEl.offsetWidth; titleEl.classList.add('hit');
+}
+function triggerFlash(a, c) { if (a > flash) { flash = a; flashCol = c; } }
+
+function onStep(s) {
+  const bar = Math.floor(s / 16), s16 = s % 16, A = arrangement(bar);
+  const fx = flashesOn && !RM;
+  if (isDropStart(bar) && s16 === 0) {
+    triggerFlash(fx ? 0.85 : 0.05, WHITE); glitch(); co2Time = RM ? 0.6 : 1.4;
+  } else if (A.sec === 'drop') {
+    // Flashs plein écran limités aux noires (≈ 2,1 Hz, sous le seuil de 3 flashs/s)
+    if (s16 % 4 === 0) triggerFlash(fx ? (s16 === 0 && bar % 4 === 0 ? 0.35 : 0.1) : 0.03, PALETTE[(bar + s16 / 4) % 4 | 0]);
+    if (s16 === 0 && bar % 4 === 0) glitch();
+  } else if (A.sec === 'build') {
+    if (s16 % 4 === 0) triggerFlash(fx ? 0.1 + 0.3 * ((A.s - 30) * 16 + s16) / 32 : 0.03, WHITE);
+    if (s16 % 8 === 0) glitch();
+  } else if (A.sec === 'intro' && s16 === 0 && bar % 2 === 0) {
+    glitch();
+  }
+}
+
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!heroVisible) { skipFrame = !skipFrame; if (skipFrame) return; }   // 30 fps hors écran
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const t = now / 1000;
+  const playing = Engine.playing;
+  const motion = RM ? 0.4 : 1;
+
+  // Horloge musicale
+  let stepF = playing ? Engine.clockStep() : (now - idleT0) / 1000 / STEP;
+  if (stepF < 0) stepF = 0;
+  const step = Math.floor(stepF), beatF = stepF / 4, beatFrac = beatF % 1, bar = Math.floor(beatF / 4);
+  const A = playing ? arrangement(bar) : IDLE;
+  if (playing && step !== lastStep) {
+    for (let s = Math.max(lastStep + 1, step - 3); s <= step; s++) onStep(s);
+    lastStep = step;
+  }
+
+  // Énergie globale (montée plus rapide que la descente)
+  let target = 0.3;
+  if (playing) {
+    if (A.sec === 'intro') target = 0.62;
+    else if (A.sec === 'drop') target = 1;
+    else if (A.sec === 'break') target = 0.38;
+    else if (A.sec === 'build') target = 0.55 + 0.45 * ((A.s - 30) + (beatF / 4 % 1)) / 2;
+  }
+  energy += (target - energy) * Math.min(1, dt * (target > energy ? 3 : 1.2));
+  const kick = A.kick ? Math.exp(-beatFrac * (playing ? 7 : 5)) * (playing ? 1 : 0.5) : 0.15;
+  const colIdx = playing ? Math.floor(bar / 2) % 4 : Math.floor(t / 4) % 4;
+
+  updateSpectrum(t, kick, playing);
+
+  // ---- Rendu ----
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  g.drawImage(layers.bg.c, 0, 0, W, H);
+  drawWall(A, beatF, kick, energy, colIdx);
+  drawHeads(beatF * (playing ? 1 : 0.5), energy, kick, A, colIdx, motion);
+  drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion);
+  drawSmoke(dt, t, energy, flash, colIdx, false, motion);
+  drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing);
+  const bx = Math.max(0, L.cx - L.boothW / 2 - 6), by = L.boothTop - 30, bw = L.boothW + 12, bh = L.boothH + 36;
+  g.drawImage(layers.booth.c, bx * DPR, by * DPR, bw * DPR, bh * DPR, bx, by, bw, bh);
+  drawBoothLights(stepF, kick, energy, colIdx);
+  updateCO2(dt);
+  drawSpill(kick, energy, colIdx);
+  drawCrowd(beatF, kick, energy, motion);
+  drawSmoke(dt, t, energy, flash, colIdx, true, motion);
+
+  // Flash / stroboscope
+  if (flash > 0.003) {
+    g.globalCompositeOperation = 'lighter';
+    g.globalAlpha = flashesOn && !RM ? flash : Math.min(flash, 0.05);
+    g.fillStyle = rgba(flashCol, 1); g.fillRect(0, 0, W, H);
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+  flash *= Math.exp(-dt * 11);
+  g.drawImage(layers.vig.c, 0, 0, W, H);
+
+  // Titre : pulsation sur le kick (transform/opacity uniquement -> composité GPU)
+  if (!RM) titleWrap.style.transform = `scale(${(1 + 0.03 * kick * energy).toFixed(4)})`;
+  titleGlow.style.opacity = (0.3 + 0.55 * kick * energy).toFixed(3);
+  drawEq();
+
+  // Qualité adaptative : baisse la résolution si le PC peine
+  if (heroVisible) {
+    perfAcc += dt; perfN++;
+    if (perfN === 120) {
+      if (perfAcc / perfN > 0.022 && quality > 0.55) { quality -= 0.15; resize(); }
+      perfAcc = 0; perfN = 0;
+    }
+  }
+}
+
+/* =========================================================
+   Interface
+   ========================================================= */
+const dropBtn = $('#dropBtn'), dropLabel = $('#dropLabel'), status = $('#status'), hint = $('#hint');
+dropBtn.addEventListener('click', async () => {
+  if (!Engine.playing) {
+    dropBtn.disabled = true;
+    const ok = await Engine.start();
+    dropBtn.disabled = false;
+    if (!ok) { hint.textContent = 'Web Audio n\'est pas disponible dans ce navigateur.'; return; }
+    lastStep = -1;
+    dropBtn.setAttribute('aria-pressed', 'true');
+    dropLabel.textContent = 'Stop the beat';
+    status.textContent = 'Boucle techno lancée, 128 BPM.';
+    glitch();
+  } else {
+    Engine.stop();
+    idleT0 = performance.now();
+    dropBtn.setAttribute('aria-pressed', 'false');
+    dropLabel.textContent = 'Drop the beat';
+    status.textContent = 'Son coupé.';
+  }
+});
+
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(es => { heroVisible = es[0].isIntersecting; }, { threshold: 0.05 }).observe($('.hero'));
+}
+
+let rTimer = 0;
+window.addEventListener('resize', () => { clearTimeout(rTimer); rTimer = setTimeout(() => { resize(); sizeEq(); }, 120); });
+
+resize(); sizeEq();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
