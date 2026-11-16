@@ -132,9 +132,17 @@ a{color:inherit}
 .drop-icon{width:0;height:0;border-style:solid;border-width:7px 0 7px 12px;border-color:transparent transparent transparent #07030d}
 .drop[aria-pressed="true"] .drop-icon{width:12px;height:12px;border:0;background:#07030d;border-radius:2px}
 @keyframes ring{0%{transform:scale(.96);opacity:.9}100%{transform:scale(1.18);opacity:0}}
-.sp-mini{position:fixed;right:clamp(.6rem,2vw,1.5rem);bottom:clamp(.6rem,2vw,1.5rem);z-index:35;width:min(320px,calc(100vw - 1.2rem));border-radius:12px;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .3s,transform .3s;box-shadow:0 10px 30px rgba(0,0,0,.6)}
-.sp-mini.on{opacity:1;pointer-events:auto;transform:none}
-.sp-mini iframe{display:block;border:0}
+/* Page cachée ?connexion */
+.cx{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:1rem;background:rgba(4,2,8,.78)}
+.cx[hidden]{display:none}
+.cx-card{width:min(420px,100%);padding:1.6rem;border-radius:18px;background:#0b0614;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.6);text-align:center}
+.cx-card h2{margin:0 0 .4rem;font:900 1.4rem/1.1 var(--font-display);text-transform:uppercase}
+.cx-card p{margin:.4rem 0;color:var(--muted);font-size:.9rem}
+.cx-card input{width:100%;margin:.6rem 0;padding:.7rem .8rem;border-radius:10px;border:1px solid var(--line);background:#05020a;color:var(--ink);font:600 .85rem/1 var(--font-mono)}
+.cx-btn{display:inline-block;margin:.5rem .25rem 0;padding:.85rem 1.3rem;border:0;border-radius:999px;cursor:pointer;font:900 .8rem/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:#04140a;background:#1ed760}
+.cx-btn[hidden]{display:none}
+.cx-btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.cx-ok{color:#1ed760!important;font-weight:700}
 .eq-box{display:flex;align-items:center;gap:.7rem;padding:.55rem .8rem;border-radius:12px;background:rgba(5,2,10,.55);border:1px solid var(--line)}
 #eq{width:200px;height:40px;display:block}
 .bpm{font:700 .7rem/1.25 var(--font-mono);letter-spacing:.18em;color:var(--muted);text-align:left;text-transform:uppercase}
@@ -272,7 +280,19 @@ a{color:inherit}
   </div>
 </main>
 
-<div class="sp-mini" id="spCard" aria-label="Lecteur Spotify"><div id="spEmbed"></div></div>
+<section class="cx" id="cx" hidden aria-labelledby="cx-t">
+  <div class="cx-card">
+    <h2 id="cx-t">Connexion Spotify</h2>
+    <p id="cxInfo">Connectez votre compte Spotify Premium pour que le bouton Drop lance SICK LEGEND sur ce site.</p>
+    <div id="cxSetup" hidden>
+      <p>Client ID de l'app Spotify (developer.spotify.com) :</p>
+      <input id="cxClient" type="text" autocomplete="off" spellcheck="false" placeholder="Client ID">
+    </div>
+    <button class="cx-btn" id="cxLogin" type="button">Se connecter avec Spotify</button>
+    <button class="cx-btn alt" id="cxLogout" type="button" hidden>Se déconnecter</button>
+    <a class="cx-btn alt" id="cxBack" href="./">Retour au site</a>
+  </div>
+</section>
 
 <noscript><p style="position:relative;z-index:40;text-align:center;padding:1rem;background:#000">Activez JavaScript pour voir l'animation et entendre la boucle techno.</p></noscript>
 
@@ -1789,12 +1809,12 @@ function frame(now) {
    ========================================================= */
 const dropBtn = $('#dropBtn'), dropLabel = $('#dropLabel'), status = $('#status'), hint = $('#hint');
 dropBtn.addEventListener('click', async () => {
-  if (Spot.ctrl) {                                            // Sick Legend via Spotify
+  if (Spot.deviceId) {                                        // compte Spotify connecté : SICK LEGEND
     if (Engine.playing) { Engine.stop(); setDropUI(false); }
-    if (Spot.playing) Spot.ctrl.pause(); else { spCard.classList.add('on'); Spot.ctrl.play(); }
+    spDrop();
     return;
   }
-  // Spotify indisponible (hors ligne) : boucle hardstyle générée dans le navigateur
+  // Pas de compte connecté (ou hors ligne) : boucle hardstyle générée dans le navigateur
   if (!Engine.playing) {
     dropBtn.disabled = true;
     const ok = await Engine.start();
@@ -1814,40 +1834,152 @@ dropBtn.addEventListener('click', async () => {
   }
 });
 
-/* ---------- Lecteur Spotify (iFrame API officielle, chargée uniquement à la demande) ---------- */
-const Spot = { ctrl: null, playing: false, pos: 0, stamp: 0, loading: false, uri: 'spotify:playlist:37i9dQZF1DZ06evO286or6' };
-const spCard = $('#spCard');
+/* ---------- Spotify : connexion (OAuth PKCE, sans secret) + Web Playback SDK ----------
+   La connexion se fait sur la page cachée ?connexion. Chaque visiteur utilise SON compte
+   Premium ; aucun identifiant ni jeton n'est écrit dans le code. Les jetons restent dans
+   le localStorage du navigateur (propre au domaine). */
+const SPOTIFY_CLIENT_ID = '';                                   // Client ID de l'app Spotify (non secret)
+const SP_PLAYLIST = 'spotify:playlist:37i9dQZF1DZ06evO286or6';  // This Is SICK LEGEND
+const SP_SCOPES = 'streaming user-read-email user-read-private user-read-playback-state user-modify-playback-state';
+const SP_REDIRECT = location.origin + location.pathname;
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+const spClientId = () => SPOTIFY_CLIENT_ID || lsGet('t12_sp_client') || '';
+const Spot = { player: null, deviceId: null, playing: false, pos: 0, stamp: 0, started: false, track: '' };
+const bpmLabel = $('#bpmLabel');
+
 function setDropUI(on, text) {
   dropBtn.setAttribute('aria-pressed', String(on));
   dropLabel.textContent = on ? 'Stop the beat' : 'Drop the beat';
   if (text) status.textContent = text;
 }
-function loadSpotify() {
-  if (Spot.ctrl || Spot.loading) return;
-  Spot.loading = true;
-  window.onSpotifyIframeApiReady = api => {
-    api.createController($('#spEmbed'), { uri: Spot.uri, width: '100%', height: 80 }, ctrl => {
-      Spot.ctrl = ctrl; Spot.loading = false;
-      ctrl.addListener('playback_update', e => {
-        const d = e.data || {}, was = Spot.playing;
-        Spot.playing = !d.isPaused && !d.isBuffering;
-        Spot.pos = d.position || 0; Spot.stamp = performance.now();
-        if (Spot.playing && !was) {
-          if (Engine.playing) Engine.stop();
-          lastStep = Math.floor(Spot.pos / 1000 / STEP);
-          spCard.classList.add('on'); setDropUI(true, 'Lecture : SICK LEGEND.'); glitch();
-        } else if (!Spot.playing && was) { idleT0 = performance.now(); setDropUI(false); }
-      });
+function spSaveTokens(j) {
+  lsSet('t12_sp_access', j.access_token);
+  if (j.refresh_token) lsSet('t12_sp_refresh', j.refresh_token);
+  lsSet('t12_sp_exp', String(Date.now() + j.expires_in * 1000));
+  return j.access_token;
+}
+function spLogout() { ['t12_sp_access', 't12_sp_refresh', 't12_sp_exp'].forEach(k => lsSet(k, null)); }
+async function spToken() {
+  const at = lsGet('t12_sp_access'), exp = +lsGet('t12_sp_exp') || 0;
+  if (at && Date.now() < exp - 60000) return at;
+  const rt = lsGet('t12_sp_refresh');
+  if (!rt || !spClientId()) return null;
+  const r = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: rt, client_id: spClientId() })
+  }).catch(() => null);
+  if (!r || !r.ok) { if (r) spLogout(); return null; }
+  return spSaveTokens(await r.json());
+}
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function spRandom(n) { const a = new Uint8Array(n); crypto.getRandomValues(a); return b64url(a); }
+async function spLogin() {
+  const verifier = spRandom(48), state = spRandom(16);
+  const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  lsSet('t12_sp_verifier', verifier); lsSet('t12_sp_state', state);
+  location.href = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
+    client_id: spClientId(), response_type: 'code', redirect_uri: SP_REDIRECT,
+    code_challenge_method: 'S256', code_challenge: challenge, scope: SP_SCOPES, state
+  });
+}
+// Retour de Spotify après la connexion : échange du code contre les jetons
+async function spCallback() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('code') && !q.has('error')) return null;
+  let msg = 'Connexion annulée.';
+  if (q.get('code') && q.get('state') === lsGet('t12_sp_state')) {
+    const r = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: SP_REDIRECT,
+                                  client_id: spClientId(), code_verifier: lsGet('t12_sp_verifier') || '' })
+    }).catch(() => null);
+    if (r && r.ok) { spSaveTokens(await r.json()); msg = ''; } else msg = 'La connexion a échoué. Vérifiez le Client ID et l\'adresse de retour.';
+  }
+  lsSet('t12_sp_verifier', null); lsSet('t12_sp_state', null);
+  history.replaceState(null, '', SP_REDIRECT + '?connexion');
+  return msg;
+}
+
+// Page cachée ?connexion
+async function spConnexionPage(msg) {
+  const cx = $('#cx'), info = $('#cxInfo'), setup = $('#cxSetup'), input = $('#cxClient');
+  const login = $('#cxLogin'), logout = $('#cxLogout');
+  cx.hidden = false;
+  const refresh = async () => {
+    const tok = await spToken();
+    setup.hidden = !!SPOTIFY_CLIENT_ID || !!tok;
+    if (!SPOTIFY_CLIENT_ID) input.value = lsGet('t12_sp_client') || '';
+    login.hidden = !!tok; logout.hidden = !tok;
+    info.classList.toggle('cx-ok', !!tok);
+    if (msg) { info.textContent = msg; msg = ''; return; }
+    if (!tok) { info.textContent = 'Connectez votre compte Spotify Premium pour que le bouton Drop lance SICK LEGEND sur ce site.'; return; }
+    const me = await fetch('https://api.spotify.com/v1/me', { headers: { Authorization: 'Bearer ' + tok } }).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (me && me.product !== 'premium') { info.classList.remove('cx-ok'); info.textContent = 'Connecté, mais ce compte n\'est pas Premium : Spotify ne permet pas la lecture sur le site.'; }
+    else info.textContent = 'Connecté' + (me ? ' : ' + me.display_name : '') + '. Le bouton Drop lance maintenant SICK LEGEND.';
+  };
+  login.addEventListener('click', () => {
+    if (!SPOTIFY_CLIENT_ID) { const v = input.value.trim(); if (!v) { input.focus(); return; } lsSet('t12_sp_client', v); }
+    spLogin();
+  });
+  logout.addEventListener('click', () => { spLogout(); if (Spot.player) Spot.player.disconnect(); Spot.deviceId = null; refresh(); });
+  refresh();
+}
+
+// Lecteur dans le navigateur (Web Playback SDK) : aucun lecteur visible sur la page
+async function spInitPlayer() {
+  if (!(await spToken())) return;
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const p = Spot.player = new window.Spotify.Player({
+      name: 'TECHNO12 Warehouse', volume: 0.85,
+      getOAuthToken: cb => { spToken().then(t => { if (t) cb(t); }); }
     });
+    p.addListener('ready', e => { Spot.deviceId = e.device_id; });
+    p.addListener('not_ready', () => { Spot.deviceId = null; });
+    p.addListener('account_error', () => { Spot.deviceId = null; });          // compte non Premium
+    p.addListener('authentication_error', () => { spLogout(); Spot.deviceId = null; });
+    p.addListener('player_state_changed', st => {
+      if (!st) return;
+      const was = Spot.playing;
+      Spot.playing = !st.paused;
+      Spot.pos = st.position; Spot.stamp = performance.now();
+      const tr = st.track_window && st.track_window.current_track;
+      Spot.track = tr ? tr.name : '';
+      if (Spot.playing) bpmLabel.innerHTML = '<b>' + BPM + ' BPM</b>' + (Spot.track ? Spot.track.replace(/[<>&]/g, '') + ' · ' : '') + 'Spotify';
+      if (Spot.playing && !was) {
+        if (Engine.playing) Engine.stop();
+        lastStep = Math.floor(Spot.pos / 1000 / STEP);
+        setDropUI(true, 'Lecture : SICK LEGEND.'); glitch();
+      } else if (!Spot.playing && was) { idleT0 = performance.now(); setDropUI(false); }
+    });
+    p.connect();
   };
   const sc = document.createElement('script');
-  sc.src = 'https://open.spotify.com/embed/iframe-api/v1'; sc.async = true;
-  sc.onerror = () => { Spot.loading = false; };              // hors ligne : Drop utilisera la boucle intégrée
+  sc.src = 'https://sdk.scdn.co/spotify-player.js'; sc.async = true;
   document.body.appendChild(sc);
 }
-// Le lecteur est préparé dès le chargement pour que Drop lance la musique au premier clic
+async function spDrop() {
+  const p = Spot.player;
+  if (!Spot.started) {
+    if (p.activateElement) await p.activateElement();                     // débloque l'audio (clic utilisateur)
+    const tok = await spToken();
+    const r = await fetch('https://api.spotify.com/v1/me/player/play?device_id=' + encodeURIComponent(Spot.deviceId), {
+      method: 'PUT', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ context_uri: SP_PLAYLIST })
+    }).catch(() => null);
+    if (r && (r.ok || r.status === 204)) { Spot.started = true; return; }
+    status.textContent = 'Spotify n\'a pas pu démarrer la lecture.';
+    return;
+  }
+  p.togglePlay();
+}
+
 setGenre('hardstyle');
-if (document.readyState === 'complete') loadSpotify(); else window.addEventListener('load', loadSpotify);
+(async () => {
+  const msg = await spCallback();
+  if (new URLSearchParams(location.search).has('connexion')) spConnexionPage(msg);
+  spInitPlayer();
+})();
 
 if ('IntersectionObserver' in window) {
   new IntersectionObserver(es => { heroVisible = es[0].isIntersecting; }, { threshold: 0.05 }).observe($('.hero'));
