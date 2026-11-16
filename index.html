@@ -995,7 +995,7 @@ function updateCO2(dt) {
 }
 
 function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
-  const d = L.boothH * 1.15, bw = L.boothW;
+  const d = L.boothH * 1.25, bw = L.boothW;
   const th = L.boothH * 0.34, yb = L.boothTop - th;          // bord arrière du plan de travail
   const col = PALETTE[colIdx];
   const cx = L.cx + Math.sin(beatF * Math.PI / 2) * d * 0.025 * motion;        // balancement
@@ -1011,26 +1011,29 @@ function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
   const ear = !playing || bar % 8 < 4;
   const raise = playing && A.sec === 'drop' && bar % 8 === 0 && (beatF % 4) < 3;
   const lsx = cx - d * 0.2, rsx = cx + d * 0.2, sy = shY + d * 0.035;
-  // Coude : au milieu du segment épaule-main, décalé perpendiculairement vers le haut / l extérieur
-  const elbow = (sx, hx2, hy2) => {
-    const vx = hx2 - sx, vy = hy2 - sy, len = Math.hypot(vx, vy) || 1;
-    let nx = -vy / len, ny = vx / len;
-    if (ny > 0) { nx = -nx; ny = -ny; }
-    const bend = Math.max(d * 0.05, d * 0.42 - len * 0.35);
-    return [sx + vx * 0.5 + nx * bend, sy + vy * 0.5 + ny * bend];
+  // Cinématique inverse à 2 segments : bras et avant-bras de longueur FIXE.
+  // Si la cible est hors de portée, la main s'arrête au bout du bras (pas d'étirement).
+  const UP = d * 0.36, FO = d * 0.34;
+  const ik = (sx, tx, ty, side) => {
+    const vx = tx - sx, vy = ty - sy, len = Math.hypot(vx, vy) || 1;
+    const Lc = clamp(len, Math.abs(UP - FO) + d * 0.12, (UP + FO) * 0.995);
+    const ux = vx / len, uy = vy / len;
+    const a = (UP * UP - FO * FO + Lc * Lc) / (2 * Lc), h = Math.sqrt(Math.max(0, UP * UP - a * a));
+    let nx = -uy, ny = ux;
+    if (nx * side < 0) { nx = -nx; ny = -ny; }            // le coude part toujours vers l'extérieur
+    return [sx + ux * a + nx * h, sy + uy * a + ny * h, sx + ux * Lc, sy + uy * Lc];
   };
-  let lhx, lhy, lex, ley, rhx, rhy, rex, rey;
-  if (ear) { lhx = hx - d * 0.11; lhy = hy + d * 0.02; lex = cx - d * 0.36; ley = shY + d * 0.1; }
+  let lhx, lhy, rhx, rhy;
+  if (ear) { lhx = hx - d * 0.11; lhy = hy + d * 0.03; }
   else {
     const a = beatF * TAU * 0.5;
-    lhx = L.cx - bw * 0.31 + Math.cos(a) * bw * 0.025 * motion; lhy = yb + th * 0.45 + Math.sin(a) * th * 0.1 * motion;
-    [lex, ley] = elbow(lsx, lhx, lhy);
+    lhx = L.cx - bw * 0.22 + Math.cos(a) * bw * 0.02 * motion; lhy = yb + th * 0.45 + Math.sin(a) * th * 0.1 * motion;
   }
-  if (raise) { rhx = cx + d * 0.3; rhy = shY - d * 0.6 + kick * d * 0.06; rex = cx + d * 0.36; rey = shY - d * 0.16; }
-  else {
-    rhx = L.cx + bw * 0.03 + Math.sin(beatF * Math.PI * 0.5 + 1) * bw * 0.03 * motion; rhy = yb + th * 0.3;
-    [rex, rey] = elbow(rsx, rhx, rhy);
-  }
+  if (raise) { rhx = cx + d * 0.3; rhy = shY - d * 0.62 + kick * d * 0.06; }
+  else { rhx = L.cx + bw * 0.03 + Math.sin(beatF * Math.PI * 0.5 + 1) * bw * 0.03 * motion; rhy = yb + th * 0.3; }
+  let lex, ley, rex, rey;
+  [lex, ley, lhx, lhy] = ik(lsx, lhx, lhy, -1);
+  [rex, rey, rhx, rhy] = ik(rsx, rhx, rhy, 1);
 
   // Halo de contre-jour
   g.globalCompositeOperation = 'lighter';
@@ -1127,7 +1130,7 @@ function drawDecks(stepF, beatF, kick, energy, colIdx, playing) {
   const spin = beatF * Math.PI * (playing ? 1.1 : 0.4);
   // Platines
   for (const side of [-1, 1]) {
-    const w = bw * 0.25, x = cx + side * bw * 0.29, y0 = yb + th * 0.1, h = th * 0.72;
+    const w = bw * 0.24, x = cx + side * bw * 0.265, y0 = yb + th * 0.1, h = th * 0.72;
     rrect(x - w / 2, y0, w, h, 3); g.fillStyle = '#0d0818'; g.fill();
     g.fillStyle = '#060309'; g.fillRect(x - w / 2, y0 + h, w, th * 0.12);
     const jx = x + side * w * 0.1, jy = y0 + h * 0.5, rx = w * 0.3, ry = h * 0.4;
