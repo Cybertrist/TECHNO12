@@ -657,6 +657,11 @@ function computeLayout() {
            machines: (() => {
              const mw = clamp(W * 0.04, 26, 54), my = lerp(stageBack, stageFront, 0.45);
              return [W * (mobile ? 0.1 : 0.12), W * (mobile ? 0.9 : 0.88)].map((x, i) => ({ x, y: my, w: mw, h: mw * 0.78, side: i ? 1 : -1 }));
+           })(),
+           flames: (() => {
+             const fw = clamp(W * 0.024, 18, 34), fy = lerp(stageBack, stageFront, 0.5);
+             const mw = clamp(W * 0.04, 26, 54);
+             return [-1, 1].map(side => ({ x: W / 2 + side * (W * (mobile ? 0.4 : 0.38) - mw * 0.5 - fw * 1.2), y: fy, w: fw, h: fw * 0.9, side }));
            })() };
 }
 
@@ -797,7 +802,27 @@ function buildBackground() {
   // Lyres (corps)
   x.fillStyle = '#120b1f';
   for (const h of heads) { x.fillRect(h.x - 9, h.y - 8, 18, 10); x.fillRect(h.x - 6, h.y + 1, 12, 9); }
-  for (const e of emitters) if (e.down) { x.fillRect(e.x - 12, e.y - 6, 24, 9); }
+  for (const e of emitters) {
+    if (e.down) {
+      // Laser suspendu au pont : attache + boîtier
+      x.strokeStyle = '#3a2d55'; x.lineWidth = 3;
+      x.beginPath(); x.moveTo(e.x - 6, L.trussY + 11); x.lineTo(e.x - 6, e.y - 6); x.moveTo(e.x + 6, L.trussY + 11); x.lineTo(e.x + 6, e.y - 6); x.stroke();
+      x.fillStyle = '#140c22'; x.fillRect(e.x - 17, e.y - 9, 34, 15);
+      x.strokeStyle = 'rgba(255,255,255,0.14)'; x.lineWidth = 1; x.strokeRect(e.x - 16.5, e.y - 8.5, 33, 14);
+      x.fillStyle = '#05020a'; x.fillRect(e.x - 5, e.y + 2, 10, 4);
+    } else if (e.id !== 0) {
+      // Projecteur laser posé sur la scène
+      const bw2 = clamp(W * 0.028, 24, 40), bh2 = bw2 * 0.58, top = e.y - bh2 * 0.35;
+      x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(e.x, top + bh2 + 3, bw2 * 0.7, 3, 0, 0, TAU); x.fill();
+      x.fillStyle = '#05020a'; x.fillRect(e.x - bw2 / 2 + 2, top + bh2, 4, 3); x.fillRect(e.x + bw2 / 2 - 6, top + bh2, 4, 3);
+      x.fillStyle = '#150d25'; x.fillRect(e.x - bw2 / 2, top, bw2, bh2);
+      x.fillStyle = '#21183a'; x.fillRect(e.x - bw2 / 2, top, bw2, bh2 * 0.22);
+      x.strokeStyle = 'rgba(255,255,255,0.15)'; x.lineWidth = 1; x.strokeRect(e.x - bw2 / 2 + 0.5, top + 0.5, bw2 - 1, bh2 - 1);
+      x.strokeStyle = 'rgba(255,255,255,0.07)'; x.beginPath();
+      for (let k = 0; k < 3; k++) { const vx = e.x + e.base / Math.abs(e.base) * 0 + (k - 1) * bw2 * 0.18 - e.dir * bw2 * 0.22; x.moveTo(vx, top + bh2 * 0.4); x.lineTo(vx, top + bh2 * 0.85); }
+      x.stroke();
+    }
+  }
 }
 
 function buildBooth() {
@@ -876,7 +901,7 @@ function buildSmoke() {
   smoke = [];
   const add = (layer, n) => { for (let i = 0; i < Math.round(n * k); i++) smoke.push(spawnSmoke(layer, {}, true)); };
   add('back', 14); add('floor', 12); add('front', 8);
-  co2 = [];
+  co2 = []; flames = [];
 }
 // Machine à fumée : jets horizontaux depuis les côtés de la scène
 function fogBurst() {
@@ -1052,6 +1077,78 @@ function drawSmoke(dt, t, energy, kick, flash, colIdx, layer, motion, A) {
 }
 
 let co2Time = 0, machineHot = 0;
+/* Lance-flammes : sprites pré-rendus (cœur blanc-jaune, orange, rouge) */
+const flameSpr = [
+  [[255, 252, 230, 1], [255, 210, 90, 0.7], [255, 140, 20, 0]],
+  [[255, 190, 60, 0.95], [255, 110, 10, 0.5], [200, 40, 0, 0]],
+  [[255, 90, 10, 0.7], [170, 30, 0, 0.3], [60, 10, 0, 0]],
+].map(st => {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, `rgba(${st[0].join(',')})`); gr.addColorStop(0.45, `rgba(${st[1].join(',')})`); gr.addColorStop(1, `rgba(${st[2].join(',')})`);
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 64); return c;
+});
+const flameT = [0, 0], flameGlow = [0, 0];
+let flames = [];
+function fire(i, dur) { flameT[i] = Math.max(flameT[i], dur); }
+function drawFlames(dt, stepF) {
+  for (let i = 0; i < L.flames.length; i++) {
+    const u = L.flames[i], x0 = u.x - u.w / 2, y0 = u.y - u.h;
+    const nzY = y0 - u.h * 0.45;
+    // Émission
+    if (flameT[i] > 0) {
+      flameT[i] -= dt;
+      const k = Math.round(dt * (RM ? 60 : 140));
+      for (let n = 0; n < k; n++) flames.push({
+        x: u.x + (Math.random() - 0.5) * u.w * 0.2, y: nzY,
+        vx: (Math.random() - 0.5) * 40, vy: -(H * (0.75 + Math.random() * 0.3)),
+        life: 1, decay: 1 / (0.4 + Math.random() * 0.25), r: u.w * (0.5 + Math.random() * 0.35)
+      });
+      flameGlow[i] = Math.min(1, flameGlow[i] + dt * 10);
+    } else flameGlow[i] = Math.max(0, flameGlow[i] - dt * 3);
+    // Lueur chaude sur la scène et la foule
+    if (flameGlow[i] > 0.01) {
+      const gy = y0 - H * 0.12, R = H * 0.55;
+      const gr = g.createRadialGradient(u.x, gy, 0, u.x, gy, R);
+      gr.addColorStop(0, `rgba(255,140,40,${0.32 * flameGlow[i]})`); gr.addColorStop(1, 'rgba(255,80,0,0)');
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(u.x - R, gy - R, R * 2, R * 2);
+      g.globalCompositeOperation = 'source-over';
+    }
+    // Caisson : ombre, corps, bandes de sécurité, buse
+    g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(u.x, u.y + 2, u.w * 0.8, u.h * 0.14, 0, 0, TAU); g.fill();
+    g.fillStyle = '#16101f'; g.fillRect(x0, y0, u.w, u.h);
+    g.save(); g.beginPath(); g.rect(x0, y0 + u.h * 0.62, u.w, u.h * 0.22); g.clip();
+    g.fillStyle = '#d4b400'; g.fillRect(x0, y0 + u.h * 0.62, u.w, u.h * 0.22);
+    g.fillStyle = '#0a0610';
+    for (let sx = x0 - u.h; sx < x0 + u.w; sx += u.w * 0.28) { g.beginPath(); g.moveTo(sx, y0 + u.h * 0.84); g.lineTo(sx + u.w * 0.14, y0 + u.h * 0.84); g.lineTo(sx + u.w * 0.14 + u.h * 0.22, y0 + u.h * 0.62); g.lineTo(sx + u.h * 0.22, y0 + u.h * 0.62); g.closePath(); g.fill(); }
+    g.restore();
+    g.strokeStyle = 'rgba(255,255,255,0.14)'; g.lineWidth = 1; g.strokeRect(x0 + 0.5, y0 + 0.5, u.w - 1, u.h - 1);
+    g.fillStyle = '#2b2236'; g.fillRect(u.x - u.w * 0.14, nzY, u.w * 0.28, y0 - nzY);
+    g.fillStyle = '#3d3350'; g.fillRect(u.x - u.w * 0.2, nzY - 2, u.w * 0.4, 3);
+    // Voyant d'armement
+    g.globalCompositeOperation = 'lighter';
+    g.globalAlpha = flameT[i] > 0 ? 1 : 0.5 + 0.5 * Math.sin(stepF * Math.PI / 2);
+    g.fillStyle = flameT[i] > 0 ? '#ffb000' : '#ff2a4a';
+    g.beginPath(); g.arc(x0 + u.w * 0.78, y0 + u.h * 0.3, 2, 0, TAU); g.fill();
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+  // Particules de feu
+  if (flames.length > 500) flames.splice(0, flames.length - 500);
+  g.globalCompositeOperation = 'lighter';
+  for (let i = flames.length - 1; i >= 0; i--) {
+    const p = flames[i];
+    p.life -= p.decay * dt;
+    if (p.life <= 0) { flames.splice(i, 1); continue; }
+    p.vy *= Math.exp(-dt * 1.4); p.vx += (Math.random() - 0.5) * 120 * dt;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.r += dt * 55;
+    const spr = p.life > 0.7 ? flameSpr[0] : p.life > 0.38 ? flameSpr[1] : flameSpr[2];
+    g.globalAlpha = Math.min(1, p.life * 1.3);
+    const R = p.r * (0.6 + 0.4 * p.life);
+    g.drawImage(spr, p.x - R, p.y - R * 1.3, R * 2, R * 2.6);
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
 /* Machines à fumée / CO2 : blocs posés au sol de la scène */
 function drawMachines(dt, stepF) {
   if (co2Time > 0) machineHot = Math.max(machineHot, 0.6);
@@ -1459,13 +1556,17 @@ function onStep(s) {
   if (s16 === 0 && (bar === 4 || (A.sec === 'break' && A.s === 24) || (A.sec === 'drop' && bar % 16 === 12))) fogBurst();
   if (isDropStart(bar) && s16 === 0) {
     triggerFlash(fx ? 0.85 : 0.05, WHITE); glitch(); co2Time = RM ? 0.6 : 1.4;
+    fire(0, 1.0); fire(1, 1.0);                                        // gerbes de feu sur le drop
   } else if (A.sec === 'drop') {
+    if (s16 === 0 && bar % 4 === 0) { fire(0, 0.45); fire(1, 0.45); }  // début de chaque groupe de 4 mesures
+    else if (s16 === 8 && bar % 2 === 1) fire(bar % 4 === 1 ? 0 : 1, 0.3); // alternance gauche / droite
     // Flashs plein écran limités aux noires (≈ 2,1 Hz, sous le seuil de 3 flashs/s)
     if (s16 % 4 === 0) triggerFlash(fx ? (s16 === 0 && bar % 4 === 0 ? 0.35 : 0.1) : 0.03, PALETTE[(bar + s16 / 4) % 4 | 0]);
     if (s16 === 0 && bar % 4 === 0) glitch();
   } else if (A.sec === 'build') {
     if (s16 % 4 === 0) triggerFlash(fx ? 0.1 + 0.3 * ((A.s - 30) * 16 + s16) / 32 : 0.03, WHITE);
     if (s16 % 8 === 0) glitch();
+    if (A.s === 31 && s16 % 4 === 0) fire((s16 / 4) % 2, 0.14);       // rafales pendant la montée
   } else if (A.sec === 'intro' && s16 === 0 && bar % 2 === 0) {
     glitch();
   }
@@ -1518,6 +1619,7 @@ function frame(now) {
   drawBoothLights(stepF, kick, energy, colIdx);
   drawMachines(dt, stepF);
   updateCO2(dt);
+  drawFlames(dt, stepF);
   drawSpill(kick, energy, colIdx);
   drawCrowd(beatF, kick, energy, motion);
   drawSmoke(dt, t, energy, kick, flash, colIdx, 'front', motion, A);
