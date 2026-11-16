@@ -258,7 +258,7 @@ a{color:inherit}
         <span class="bpm"><b>128 BPM</b>Acid · A min</span>
       </div>
     </div>
-    <p class="hint" id="hint">Son généré en direct dans le navigateur, aucun fichier audio</p>
+    <p class="hint" id="hint" hidden></p>
     <p class="sr-only" id="status" aria-live="polite"></p>
   </section>
 
@@ -782,13 +782,6 @@ function buildBooth() {
   gr.addColorStop(0, '#150c22'); gr.addColorStop(1, '#050208');
   x.fillStyle = gr; x.fill();
   x.strokeStyle = 'rgba(255,255,255,0.08)'; x.lineWidth = 1; x.stroke();
-  // Plateau + matériel
-  x.fillStyle = '#1d1430'; x.fillRect(cx - bw / 2 - 4, bt - 5, bw + 8, 6);
-  x.fillStyle = '#0d0818';
-  const dw = bw * 0.26, dh = bh * 0.12;
-  x.fillRect(cx - bw * 0.42, bt - 5 - dh, dw, dh);
-  x.fillRect(cx + bw * 0.42 - dw, bt - 5 - dh, dw, dh);
-  x.fillRect(cx - bw * 0.1, bt - 5 - dh * 1.2, bw * 0.2, dh * 1.2);
   // Lettrage gravé
   x.font = `900 ${Math.round(bh * 0.26)}px "Arial Black", Arial, sans-serif`;
   x.textAlign = 'center'; x.textBaseline = 'middle';
@@ -1002,92 +995,100 @@ function updateCO2(dt) {
 }
 
 function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
-  const d = L.boothH * 1.25, top = L.boothTop;
+  const d = L.boothH * 1.15, bw = L.boothW;
+  const th = L.boothH * 0.34, yb = L.boothTop - th;          // bord arrière du plan de travail
   const col = PALETTE[colIdx];
-  const cx = L.cx + Math.sin(beatF * Math.PI / 2) * d * 0.03 * motion;          // balancement
+  const cx = L.cx + Math.sin(beatF * Math.PI / 2) * d * 0.025 * motion;        // balancement
   const nod = A.kick ? kick : 0.5 + 0.5 * Math.sin(beatF * Math.PI);           // hochement de tête
   const amp = (0.35 + energy) * motion;
-  const shY = top - d * 0.4 + nod * d * 0.025 * amp;                           // ligne d'épaules
-  const neckY = shY - d * 0.06;
-  const hx = cx + Math.sin(beatF * Math.PI / 2 + 0.6) * d * 0.012 * motion;
-  const hy = neckY - d * 0.19 + nod * d * 0.045 * amp;                         // la tête plonge sur le kick
+  const shY = yb - d * 0.36 + nod * d * 0.02 * amp;                            // ligne d'épaules
+  const neckY = shY - d * 0.045;
+  const hx = cx + Math.sin(beatF * Math.PI / 2 + 0.6) * d * 0.01 * motion;
+  const hy = neckY - d * 0.15 + nod * d * 0.04 * amp;                          // la tête plonge sur le kick
   const tilt = Math.sin(beatF * Math.PI / 2) * 0.1 * motion;
 
-  // Poses : main gauche au casque (4 mesures sur 8) ou sur la platine ; main droite au mixer ou levée au drop
+  // Poses : main gauche au casque ou sur le jog ; main droite sur les potards, levée au drop
   const ear = !playing || bar % 8 < 4;
   const raise = playing && A.sec === 'drop' && bar % 8 === 0 && (beatF % 4) < 3;
-  const lsx = cx - d * 0.33, rsx = cx + d * 0.33, sy = shY + d * 0.05;
-  let lex, ley, lhx, lhy, rex, rey, rhx, rhy;
-  if (ear) { lex = cx - d * 0.6; ley = shY + d * 0.06; lhx = hx - d * 0.2; lhy = hy + d * 0.03; }
+  const lsx = cx - d * 0.2, rsx = cx + d * 0.2, sy = shY + d * 0.035;
+  // Coude : au milieu du segment épaule-main, décalé perpendiculairement vers le haut / l extérieur
+  const elbow = (sx, hx2, hy2) => {
+    const vx = hx2 - sx, vy = hy2 - sy, len = Math.hypot(vx, vy) || 1;
+    let nx = -vy / len, ny = vx / len;
+    if (ny > 0) { nx = -nx; ny = -ny; }
+    const bend = Math.max(d * 0.05, d * 0.42 - len * 0.35);
+    return [sx + vx * 0.5 + nx * bend, sy + vy * 0.5 + ny * bend];
+  };
+  let lhx, lhy, lex, ley, rhx, rhy, rex, rey;
+  if (ear) { lhx = hx - d * 0.11; lhy = hy + d * 0.02; lex = cx - d * 0.36; ley = shY + d * 0.1; }
   else {
-    const scr = Math.sin(beatF * Math.PI * 2) * d * 0.06 * motion;
-    lex = cx - d * 0.58; ley = shY + d * 0.3; lhx = cx - d * 0.6 + scr; lhy = top - d * 0.05;
+    const a = beatF * TAU * 0.5;
+    lhx = L.cx - bw * 0.31 + Math.cos(a) * bw * 0.025 * motion; lhy = yb + th * 0.45 + Math.sin(a) * th * 0.1 * motion;
+    [lex, ley] = elbow(lsx, lhx, lhy);
   }
-  if (raise) { rex = cx + d * 0.58; rey = shY - d * 0.22; rhx = cx + d * 0.5; rhy = shY - d * 0.72 + kick * d * 0.08; }
+  if (raise) { rhx = cx + d * 0.3; rhy = shY - d * 0.6 + kick * d * 0.06; rex = cx + d * 0.36; rey = shY - d * 0.16; }
   else {
-    const knob = Math.sin(beatF * Math.PI * 0.5 + 1) * d * 0.07 * motion;
-    rex = cx + d * 0.5; rey = shY + d * 0.32; rhx = cx + d * 0.16 + knob; rhy = top - d * 0.04;
+    rhx = L.cx + bw * 0.03 + Math.sin(beatF * Math.PI * 0.5 + 1) * bw * 0.03 * motion; rhy = yb + th * 0.3;
+    [rex, rey] = elbow(rsx, rhx, rhy);
   }
 
-  // Halo de contre-jour derrière le DJ
+  // Halo de contre-jour
   g.globalCompositeOperation = 'lighter';
-  const halo = g.createRadialGradient(hx, hy, 0, hx, hy, d * 0.9);
-  halo.addColorStop(0, rgba(col, 0.22 + 0.25 * kick * energy)); halo.addColorStop(1, rgba(col, 0));
+  const halo = g.createRadialGradient(hx, hy, 0, hx, hy, d * 0.8);
+  halo.addColorStop(0, rgba(col, 0.2 + 0.25 * kick * energy)); halo.addColorStop(1, rgba(col, 0));
   g.fillStyle = halo; g.fillRect(hx - d, hy - d, d * 2, d * 2);
   g.globalCompositeOperation = 'source-over';
 
-  const figure = (e) => {             // e = surépaisseur (passe de liseré) ou 0 (silhouette)
-    // Buste
+  const figure = (e) => {
+    // Buste (caché sous le bord du plateau)
+    g.save(); g.beginPath(); g.rect(0, 0, W, yb + 1); g.clip();
     g.beginPath();
-    g.moveTo(cx - d * 0.5, top + 6);
-    g.bezierCurveTo(cx - d * 0.49, shY + d * 0.25, cx - d * 0.47, shY + d * 0.02, cx - d * 0.31, shY - d * 0.01);
-    g.quadraticCurveTo(cx - d * 0.14, shY - d * 0.035, cx - d * 0.075, neckY);
-    g.lineTo(cx + d * 0.075, neckY);
-    g.quadraticCurveTo(cx + d * 0.14, shY - d * 0.035, cx + d * 0.31, shY - d * 0.01);
-    g.bezierCurveTo(cx + d * 0.47, shY + d * 0.02, cx + d * 0.49, shY + d * 0.25, cx + d * 0.5, top + 6);
+    g.moveTo(cx - d * 0.18, yb + 6);
+    g.bezierCurveTo(cx - d * 0.19, shY + d * 0.2, cx - d * 0.25, shY + d * 0.04, cx - d * 0.2, shY);
+    g.quadraticCurveTo(cx - d * 0.09, shY - d * 0.025, cx - d * 0.045, neckY);
+    g.lineTo(cx + d * 0.045, neckY);
+    g.quadraticCurveTo(cx + d * 0.09, shY - d * 0.025, cx + d * 0.2, shY);
+    g.bezierCurveTo(cx + d * 0.25, shY + d * 0.04, cx + d * 0.19, shY + d * 0.2, cx + d * 0.18, yb + 6);
     g.closePath();
-    // Cou
-    g.moveTo(hx - d * 0.065, hy + d * 0.08); g.lineTo(hx + d * 0.065, hy + d * 0.08);
-    g.lineTo(cx + d * 0.08, neckY + d * 0.02); g.lineTo(cx - d * 0.08, neckY + d * 0.02); g.closePath();
-    // Tête + cheveux
-    g.moveTo(hx + d * 0.13, hy); g.ellipse(hx, hy, d * 0.13, d * 0.16, tilt, 0, TAU);
-    g.moveTo(hx + d * 0.14, hy - d * 0.06); g.ellipse(hx, hy - d * 0.06, d * 0.14, d * 0.11, tilt, 0, TAU);
-    // Mains
-    g.moveTo(lhx + d * 0.06, lhy); g.arc(lhx, lhy, d * 0.06, 0, TAU);
-    g.moveTo(rhx + d * 0.06, rhy); g.arc(rhx, rhy, d * 0.06, 0, TAU);
-    g.fill();
-    if (e) { g.lineWidth = e * 2; g.stroke(); }
-
-    // Bras (bras haut plus épais que l'avant-bras)
-    g.lineCap = 'round'; g.lineJoin = 'round';
-    g.lineWidth = d * 0.15 + e * 2;
-    g.beginPath(); g.moveTo(lsx, sy); g.lineTo(lex, ley); g.moveTo(rsx, sy); g.lineTo(rex, rey); g.stroke();
-    g.lineWidth = d * 0.11 + e * 2;
-    g.beginPath(); g.moveTo(lex, ley); g.lineTo(lhx, lhy); g.moveTo(rex, rey); g.lineTo(rhx, rhy); g.stroke();
-
-    // Casque : arceau + écouteurs (le gauche est tenu contre l'oreille)
-    g.save(); g.translate(hx, hy); g.rotate(tilt);
-    g.lineWidth = d * 0.035 + e * 2;
-    g.beginPath(); g.ellipse(0, -d * 0.01, d * 0.165, d * 0.2, 0, Math.PI * 1.08, Math.PI * 1.92); g.stroke();
+    g.fill(); if (e) { g.lineWidth = e * 2; g.stroke(); }
+    g.restore();
+    // Cou, tête, cheveux
     g.beginPath();
-    g.rect(d * 0.12 - e, -d * 0.04 - e, d * 0.07 + e * 2, d * 0.11 + e * 2);
-    g.rect(-d * 0.19 - e, -d * 0.04 - e, d * 0.07 + e * 2, d * 0.11 + e * 2);
+    g.moveTo(hx - d * 0.04, hy + d * 0.08); g.lineTo(hx + d * 0.04, hy + d * 0.08);
+    g.lineTo(cx + d * 0.05, neckY + d * 0.02); g.lineTo(cx - d * 0.05, neckY + d * 0.02); g.closePath();
+    g.moveTo(hx + d * 0.095, hy); g.ellipse(hx, hy, d * 0.095, d * 0.12, tilt, 0, TAU);
+    g.moveTo(hx + d * 0.1, hy - d * 0.045); g.ellipse(hx, hy - d * 0.045, d * 0.1, d * 0.08, tilt, 0, TAU);
+    g.fill(); if (e) { g.lineWidth = e * 2; g.stroke(); }
+    // Bras
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    g.lineWidth = d * 0.085 + e * 2;
+    g.beginPath(); g.moveTo(lsx, sy); g.lineTo(lex, ley); g.moveTo(rsx, sy); g.lineTo(rex, rey); g.stroke();
+    g.lineWidth = d * 0.065 + e * 2;
+    g.beginPath(); g.moveTo(lex, ley); g.lineTo(lhx, lhy); g.moveTo(rex, rey); g.lineTo(rhx, rhy); g.stroke();
+    g.beginPath();
+    g.moveTo(lhx + d * 0.04 + e, lhy); g.arc(lhx, lhy, d * 0.04 + e, 0, TAU);
+    g.moveTo(rhx + d * 0.04 + e, rhy); g.arc(rhx, rhy, d * 0.04 + e, 0, TAU);
+    g.fill();
+    // Casque
+    g.save(); g.translate(hx, hy); g.rotate(tilt);
+    g.lineWidth = d * 0.025 + e * 2;
+    g.beginPath(); g.ellipse(0, -d * 0.01, d * 0.118, d * 0.145, 0, Math.PI * 1.08, Math.PI * 1.92); g.stroke();
+    g.beginPath();
+    g.rect(d * 0.085 - e, -d * 0.03 - e, d * 0.05 + e * 2, d * 0.08 + e * 2);
+    g.rect(-d * 0.135 - e, -d * 0.03 - e, d * 0.05 + e * 2, d * 0.08 + e * 2);
     g.fill();
     g.restore();
   };
 
-  // Passe 1 : liseré lumineux fin (contre-jour)
-  g.fillStyle = g.strokeStyle = rgba(col, 0.45 + 0.35 * energy);
-  figure(1.6);
-  // Passe 2 : silhouette noire
-  g.fillStyle = g.strokeStyle = '#030106';
+  g.fillStyle = g.strokeStyle = rgba(col, 0.45 + 0.35 * energy);   // liseré (contre-jour)
+  figure(1.3);
+  g.fillStyle = g.strokeStyle = '#030106';                          // silhouette
   figure(0);
-  // Petit reflet sur l'écouteur droit
   g.globalCompositeOperation = 'lighter';
   g.globalAlpha = 0.5 + 0.5 * kick * energy;
   g.fillStyle = rgba(PALETTE[(colIdx + 1) % 4], 1);
   g.save(); g.translate(hx, hy); g.rotate(tilt);
-  g.fillRect(d * 0.17, -d * 0.02, d * 0.015, d * 0.06);
+  g.fillRect(d * 0.125, -d * 0.015, d * 0.012, d * 0.045);
   g.restore();
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
@@ -1105,14 +1106,72 @@ function drawBoothLights(stepF, kick, energy, colIdx) {
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = rgba(PALETTE[(colIdx + 1) % 4], 1);
   g.fillText('TECHNO12', cx, bt + bh * 0.58);
-  // LED des platines
-  const st = Math.floor(stepF);
-  for (let i = 0; i < 8; i++) {
-    g.globalAlpha = (st % 8 === i) ? 1 : 0.25;
-    g.fillStyle = i < 4 ? '#39ff14' : '#ff1fd1';
-    const x = i < 4 ? cx - bw * 0.4 + i * 6 : cx + bw * 0.22 + (i - 4) * 6;
-    g.fillRect(x, bt - 9, 3, 2);
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+/* Plan de travail du booth : 2 platines CDJ + table de mixage */
+function rrect(x, y, w, h, r) {
+  g.beginPath();
+  if (hasRoundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h);
+}
+function drawDecks(stepF, beatF, kick, energy, colIdx, playing) {
+  const { cx, boothW: bw, boothH: bh, boothTop: bt } = L;
+  const th = bh * 0.34, yb = bt - th;
+  const col = PALETTE[colIdx];
+  // Plateau en perspective
+  g.beginPath();
+  g.moveTo(cx - bw * 0.47, yb); g.lineTo(cx + bw * 0.47, yb); g.lineTo(cx + bw / 2, bt); g.lineTo(cx - bw / 2, bt); g.closePath();
+  g.fillStyle = '#1c122d'; g.fill();
+  g.strokeStyle = 'rgba(255,255,255,0.06)'; g.lineWidth = 1; g.stroke();
+
+  const spin = beatF * Math.PI * (playing ? 1.1 : 0.4);
+  // Platines
+  for (const side of [-1, 1]) {
+    const w = bw * 0.25, x = cx + side * bw * 0.29, y0 = yb + th * 0.1, h = th * 0.72;
+    rrect(x - w / 2, y0, w, h, 3); g.fillStyle = '#0d0818'; g.fill();
+    g.fillStyle = '#060309'; g.fillRect(x - w / 2, y0 + h, w, th * 0.12);
+    const jx = x + side * w * 0.1, jy = y0 + h * 0.5, rx = w * 0.3, ry = h * 0.4;
+    g.beginPath(); g.ellipse(jx, jy, rx, ry, 0, 0, TAU); g.fillStyle = '#17102b'; g.fill();
+    g.beginPath(); g.ellipse(jx, jy, rx * 0.45, ry * 0.45, 0, 0, TAU); g.fillStyle = '#0a0612'; g.fill();
+    g.globalCompositeOperation = 'lighter';
+    g.globalAlpha = 0.55 + 0.45 * kick * energy;
+    g.strokeStyle = rgba(col, 1); g.lineWidth = 1.5;
+    g.beginPath(); g.ellipse(jx, jy, rx, ry, 0, 0, TAU); g.stroke();
+    const a = spin * side;
+    g.globalAlpha = 1; g.fillStyle = '#ffffff';
+    g.beginPath(); g.arc(jx + Math.cos(a) * rx * 0.75, jy + Math.sin(a) * ry * 0.75, 1.6, 0, TAU); g.fill();
+    // Écran + boutons play / cue
+    const sx = x - side * w * 0.36;
+    g.globalAlpha = 0.65; g.fillStyle = '#00c8ff';
+    g.fillRect(sx - w * 0.07, y0 + h * 0.15, w * 0.14, h * 0.32);
+    const on = Math.floor(stepF / 4) % 2 === 0;
+    g.globalAlpha = on ? 1 : 0.35; g.fillStyle = '#39ff14';
+    g.beginPath(); g.arc(sx - w * 0.035, y0 + h * 0.75, 2, 0, TAU); g.fill();
+    g.globalAlpha = 0.8; g.fillStyle = '#ffb000';
+    g.beginPath(); g.arc(sx + w * 0.035, y0 + h * 0.75, 2, 0, TAU); g.fill();
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
+  // Table de mixage : 4 voies (3 potards + VU-mètre), crossfader
+  const mw = bw * 0.19, mx = cx - mw / 2, my = yb + th * 0.04, mh = th * 0.86;
+  rrect(mx, my, mw, mh, 3); g.fillStyle = '#0f0a1c'; g.fill();
+  g.fillStyle = '#060309'; g.fillRect(mx, my + mh, mw, th * 0.1);
+  const kr = Math.max(1.4, Math.min(mw / 16, mh / 11));
+  g.globalCompositeOperation = 'lighter';
+  for (let ch = 0; ch < 4; ch++) {
+    const kx = mx + mw * (0.16 + ch * 0.2);
+    for (let r = 0; r < 3; r++) {
+      g.globalAlpha = 0.85; g.fillStyle = '#3a3058';
+      g.beginPath(); g.arc(kx, my + mh * (0.14 + r * 0.17), kr, 0, TAU); g.fill();
+    }
+    const lvl = Math.round(clamp(spectrum[ch * 6] * 1.2, 0, 1) * 5);
+    for (let s = 0; s < 5; s++) {
+      g.globalAlpha = s < lvl ? 1 : 0.15;
+      g.fillStyle = s >= 4 ? '#ff2a4a' : s >= 3 ? '#ffe600' : '#39ff14';
+      g.fillRect(kx - 1, my + mh * 0.9 - (s + 1) * mh * 0.075, 2.2, mh * 0.05);
+    }
+  }
+  g.globalAlpha = 0.9; g.fillStyle = rgba(col, 1);
+  g.fillRect(cx - mw * 0.18 + Math.sin(beatF * Math.PI / 4) * mw * 0.1 * (playing ? 1 : 0), my + mh * 0.92, mw * 0.08, mh * 0.06);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 
@@ -1305,9 +1364,10 @@ function frame(now) {
   drawHeads(beatF * (playing ? 1 : 0.5), energy, kick, A, colIdx, motion);
   drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion);
   drawSmoke(dt, t, energy, flash, colIdx, false, motion);
-  drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing);
-  const bx = Math.max(0, L.cx - L.boothW / 2 - 6), by = L.boothTop - 30, bw = L.boothW + 12, bh = L.boothH + 36;
+  const bx = Math.max(0, L.cx - L.boothW / 2 - 6), by = L.boothTop - 4, bw = L.boothW + 12, bh = L.boothH + 10;
   g.drawImage(layers.booth.c, bx * DPR, by * DPR, bw * DPR, bh * DPR, bx, by, bw, bh);
+  drawDecks(stepF, beatF, kick, energy, colIdx, playing);
+  drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing);
   drawBoothLights(stepF, kick, energy, colIdx);
   updateCO2(dt);
   drawSpill(kick, energy, colIdx);
@@ -1348,7 +1408,7 @@ dropBtn.addEventListener('click', async () => {
     dropBtn.disabled = true;
     const ok = await Engine.start();
     dropBtn.disabled = false;
-    if (!ok) { hint.textContent = 'Web Audio n\'est pas disponible dans ce navigateur.'; return; }
+    if (!ok) { hint.hidden = false; hint.textContent = 'Web Audio n\'est pas disponible dans ce navigateur.'; return; }
     lastStep = -1;
     dropBtn.setAttribute('aria-pressed', 'true');
     dropLabel.textContent = 'Stop the beat';
