@@ -69,6 +69,7 @@ a{color:inherit}
   -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
   animation:neon 5s linear infinite;
 }
+.lite .title-glow{display:none}                         /* mode léger : pas de flou */
 .title-glow{
   position:absolute;inset:0;z-index:0;pointer-events:none;
   color:var(--mag);filter:blur(26px);opacity:.45;will-change:opacity;
@@ -734,6 +735,17 @@ document.addEventListener('visibilitychange', () => {
 const cvs = $('#scene');
 const g = cvs.getContext('2d', { alpha: false });
 let W = 0, H = 0, DPR = 1, quality = 1;
+/* Mode léger : ?lite dans l'URL, ou activé automatiquement si le rendu passe sous 30 FPS pendant 2 s */
+let LITE = new URLSearchParams(location.search).has('lite');
+const LITE_FPS = 30;
+function enableLite(reason) {
+  if (LITE) return;
+  LITE = true;
+  document.documentElement.classList.add('lite');
+  if (window.console) console.info('[TECHNO12] mode léger activé : ' + reason);
+  resize();
+}
+if (LITE) document.documentElement.classList.add('lite');
 let L = null;                       // mise en page de la scène
 const layers = {};
 let crowd = [], smoke = [], co2 = [], emitters = [], heads = [];
@@ -817,7 +829,7 @@ function computeLayout() {
 function resize() {
   W = window.innerWidth; H = window.innerHeight;
   const cap = W < 700 ? 1.5 : 1.75;
-  DPR = Math.max(0.6, Math.min(window.devicePixelRatio || 1, cap) * quality);
+  DPR = LITE ? 0.5 : Math.max(0.6, Math.min(window.devicePixelRatio || 1, cap) * quality);
   cvs.width = Math.round(W * DPR); cvs.height = Math.round(H * DPR);
   L = computeLayout();
   LEN = Math.hypot(W, H) * 1.15;
@@ -1006,12 +1018,14 @@ function buildCrowd() {
     { y: H * 0.915, s: 0.82, col: '#10071b' },
     { y: H * 1.0, s: 1.08, col: '#040107' },
   ];
-  crowd = defs.map((d, ri) => {
-    const u = baseU * d.s, gap = u * 0.44, n = Math.ceil(W / gap) + 2, people = [];
+  // Mode léger : 2 rangées (fond + premier plan), on retire celle du milieu
+  crowd = (LITE ? [defs[0], defs[2]] : defs).map((d, i0) => {
+    const ri = LITE ? [0, 2][i0] : i0;
+    const u = baseU * d.s, gap = u * (LITE ? 0.6 : 0.44), n = Math.ceil(W / gap) + 2, people = [];
     for (let i = 0; i < n; i++) {
       const r = Math.random();
       let pose = r < 0.36 ? 'V' : r < 0.58 ? 'pump' : r < 0.7 ? 'clap' : r < 0.82 ? 'phone' : 'down';
-      if (ri === 2 && pose === 'phone') pose = 'V';
+      if ((ri === 2 || LITE) && pose === 'phone') pose = 'V';
       people.push({
         x: (i - 0.5) * gap + (Math.random() - 0.5) * gap * 0.5,
         dy: (Math.random() - 0.5) * u * 0.08,
@@ -1048,12 +1062,13 @@ function spawnSmoke(layer, p, initial) {
 function buildSmoke() {
   const k = L.mobile ? 0.55 : 1;
   smoke = [];
-  const add = (layer, n) => { for (let i = 0; i < Math.round(n * k); i++) smoke.push(spawnSmoke(layer, {}, true)); };
+  const add = (layer, n) => { if (LITE) return; for (let i = 0; i < Math.round(n * k); i++) smoke.push(spawnSmoke(layer, {}, true)); };
   add('back', 14); add('floor', 12); add('front', 8);
   co2 = []; flames = [];
 }
 // Machine à fumée : jets horizontaux depuis les côtés de la scène
 function fogBurst() {
+  if (LITE) return;                                          // mode léger : pas de fumée
   const n = L.mobile ? 5 : 9;
   for (const side of [-1, 1]) for (let i = 0; i < n; i++) {
     const p = spawnSmoke('floor', {}, false);
@@ -1160,7 +1175,7 @@ function drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion) {
     if (vis <= 0.01) continue;
     const ci = playing ? (e.col + Math.floor(bar / 2)) % 4 : (e.col + colIdx) % 4;
     const { off, sm } = laserOffset(e, pat, beatF * tempo, motion);
-    const n = Math.max(1, Math.round(e.n * (0.35 + 0.65 * energy)));
+    const n = Math.max(1, Math.round(e.n * (0.35 + 0.65 * energy) * (LITE ? 0.5 : 1)));
     const spread = e.spread * (0.45 + 0.6 * energy) * sm;
     const center = e.base + off;
     const w = (0.7 + 2.3 * energy) * (1 + kick * 0.7 * energy);
@@ -1175,8 +1190,10 @@ function drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion) {
     for (let i = 0; i < n; i++) {
       const a = center + (n === 1 ? 0 : (i / (n - 1) - 0.5) * spread);
       g.rotate(a);
-      g.globalAlpha = alpha * 0.16;
-      g.beginPath(); g.moveTo(0, -w * 1.5); g.lineTo(LEN, -w * 7); g.lineTo(LEN, w * 7); g.lineTo(0, w * 1.5); g.fill();
+      if (!LITE) {
+        g.globalAlpha = alpha * 0.16;
+        g.beginPath(); g.moveTo(0, -w * 1.5); g.lineTo(LEN, -w * 7); g.lineTo(LEN, w * 7); g.lineTo(0, w * 1.5); g.fill();
+      }
       g.globalAlpha = alpha * 0.95;
       g.beginPath(); g.moveTo(0, -w * 0.3); g.lineTo(LEN, -w * 0.9); g.lineTo(LEN, w * 0.9); g.lineTo(0, w * 0.3); g.fill();
       g.rotate(-a);
@@ -1247,7 +1264,7 @@ function drawFlames(dt, stepF) {
     // Émission
     if (flameT[i] > 0) {
       flameT[i] -= dt;
-      const k = Math.round(dt * (RM ? 60 : 140));
+      const k = Math.round(dt * (RM ? 60 : 140) * (LITE ? 0.5 : 1));
       for (let n = 0; n < k; n++) flames.push({
         x: u.x + (Math.random() - 0.5) * u.w * 0.2, y: nzY,
         vx: (Math.random() - 0.5) * 40, vy: -(H * (0.75 + Math.random() * 0.3)),
@@ -1282,7 +1299,8 @@ function drawFlames(dt, stepF) {
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
   // Particules de feu
-  if (flames.length > 500) flames.splice(0, flames.length - 500);
+  const fMax = LITE ? 250 : 500;
+  if (flames.length > fMax) flames.splice(0, flames.length - fMax);
   g.globalCompositeOperation = 'lighter';
   for (let i = flames.length - 1; i >= 0; i--) {
     const p = flames[i];
@@ -1338,7 +1356,7 @@ function drawMachines(dt, stepF) {
 function updateCO2(dt) {
   if (co2Time > 0) {
     co2Time -= dt;
-    const k = Math.round(dt * (RM ? 25 : 70));
+    const k = Math.round(dt * (RM ? 25 : 70) * (LITE ? 0.5 : 1));
     for (const side of [-1, 1]) for (let i = 0; i < k; i++) {
       co2.push({
         x: L.machines[side < 0 ? 0 : 1].x + (Math.random() - 0.5) * 6, y: L.machines[0].y - L.machines[0].h - 4,
@@ -1346,7 +1364,8 @@ function updateCO2(dt) {
         life: 1, r: 20 + Math.random() * 25
       });
     }
-    if (co2.length > 320) co2.splice(0, co2.length - 320);
+    const cMax = LITE ? 160 : 320;
+    if (co2.length > cMax) co2.splice(0, co2.length - cMax);
   }
   if (!co2.length) return;
   g.globalCompositeOperation = 'lighter';
@@ -1621,7 +1640,7 @@ function drawCrowd(beatF, kick, energy, motion) {
         const sx = p.sx + side * u * 0.15;
         const ex = sx + Math.sin(t1) * side * upper, ey = shY - Math.cos(t1) * upper;
         const hx = ex + Math.sin(t2) * side * fore, hy = ey - Math.cos(t2) * fore;
-        g.moveTo(sx, shY); g.lineTo(ex, ey); g.lineTo(hx, hy);
+        g.moveTo(sx, shY); if (!LITE) g.lineTo(ex, ey); g.lineTo(hx, hy);
         if (p.pose === 'phone') phones.push(hx, hy, u);
       }
     }
@@ -1688,6 +1707,7 @@ function drawEq() {
 const titleEl = $('#title'), titleWrap = $('#titleWrap'), titleGlow = $('#titleGlow');
 let last = performance.now(), energy = 0.3, flash = 0, flashCol = WHITE, lastStep = -1, idleT0 = performance.now();
 let heroVisible = true, skipFrame = false, perfAcc = 0, perfN = 0, lastGlitch = 0;
+let lastRender = 0, fpsT0 = 0, fpsFrames = 0, prevNow = 0, firstFrame = 0;
 
 function glitch() {
   if (RM) return;
@@ -1725,6 +1745,29 @@ function onStep(s) {
 
 function frame(now) {
   requestAnimationFrame(frame);
+  // Détection automatique : moins de 30 FPS pendant 2 s -> mode léger.
+  // Mesure seulement quand la scène est visible, après 1,5 s de chauffe, et remise à zéro
+  // après une pause (onglet masqué, mise en veille) pour éviter les faux positifs.
+  if (!firstFrame) firstFrame = now;
+  if (!LITE) {
+    // Images très espacées sans focus = onglet bridé par le navigateur (fenêtre en arrière-plan),
+    // pas une machine lente : on ne compte pas.
+    const gap = now - prevNow, throttled = gap > 250 && !document.hasFocus();
+    if (!heroVisible || document.hidden || gap > 1000 || throttled || now - firstFrame < 1500) { fpsT0 = 0; }
+    else {
+      if (!fpsT0) { fpsT0 = now; fpsFrames = 0; }
+      fpsFrames++;
+      if (now - fpsT0 >= 2000) {
+        const fps = fpsFrames * 1000 / (now - fpsT0);
+        fpsT0 = 0;
+        // marge de 5 % : un navigateur bridé à 30 FPS (économie d'énergie) ne doit pas basculer
+        if (fps < LITE_FPS * 0.95) enableLite(fps.toFixed(1) + ' FPS mesurés');
+      }
+    }
+  }
+  prevNow = now;
+  // Mode léger : cible 30 FPS (une image sur deux à 60 Hz)
+  if (LITE) { if (now - lastRender < 1000 / LITE_FPS - 3) return; lastRender = now; }
   if (!heroVisible) { skipFrame = !skipFrame; if (skipFrame) return; }   // 30 fps hors écran
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   const t = now / 1000;
@@ -1795,7 +1838,7 @@ function frame(now) {
   drawEq();
 
   // Qualité adaptative : baisse la résolution si le PC peine
-  if (heroVisible) {
+  if (heroVisible && !LITE) {
     perfAcc += dt; perfN++;
     if (perfN === 120) {
       if (perfAcc / perfN > 0.022 && quality > 0.55) { quality -= 0.15; resize(); }

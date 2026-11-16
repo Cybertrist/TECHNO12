@@ -12,9 +12,9 @@ Tout tient dans **un seul fichier `index.html`** (HTML, CSS et JS intégrés). I
 - **Page cachée `?connexion`** (ex. `https://cybertrist.github.io/TECHNO12/?connexion`) : bouton « Se connecter avec Spotify » (OAuth PKCE, aucun secret dans le code). Chaque visiteur utilise son propre compte **Premium** ; les jetons restent dans le navigateur. Ne fonctionne que sur ordinateur.
 
   Configuration : créer une app sur developer.spotify.com, cocher « Web Playback SDK », ajouter les adresses de retour `https://cybertrist.github.io/TECHNO12/` (et `http://127.0.0.1:8712/` pour tester en local), puis renseigner le Client ID dans `SPOTIFY_CLIENT_ID` (index.html) ou directement sur la page `?connexion`. En mode développement, seuls les comptes ajoutés dans l app (User Management) peuvent se connecter.
-- **Logo** : intégré directement dans `index.html` (en-tête, pied de page, icône d'onglet), sans fichier image séparé.
+- **Logo** : utilisé comme icône d'onglet, intégré directement dans `index.html` sans fichier image séparé.
 - **Égaliseur animé** branché sur un `AnalyserNode`.
-- **En-tête** avec le logo et le menu (Line-up, Releases, Tickets), puis les sections correspondantes.
+- **En-tête** avec le menu (Line-up, Releases, Tickets), puis les sections correspondantes.
 
 ## Accessibilité et performances
 
@@ -23,6 +23,32 @@ Tout tient dans **un seul fichier `index.html`** (HTML, CSS et JS intégrés). I
 - Le bouton « Flashs ON/OFF » de l'en-tête coupe les flashs plein écran. Même activés, ils sont limités à environ 2 par seconde, sous le seuil de 3 flashs/s.
 - La page vise 60 fps : décors pré-rendus hors écran, gradients mis en cache, densité de pixels plafonnée. La résolution baisse toute seule si la machine peine, et l'animation passe à 30 fps quand la scène n'est plus visible.
 - Le son se met en pause quand l'onglet est masqué.
+
+### Mode léger
+
+Pour les machines modestes, la page a un **mode léger**. Il s'active :
+
+- **à la main**, en ajoutant `?lite` à l'adresse (ex. `https://cybertrist.github.io/TECHNO12/?lite`, ou `?connexion&lite`) ;
+- **automatiquement**, si le rendu passe sous 30 FPS pendant 2 secondes.
+
+En mode léger :
+
+| | Normal | Léger |
+|---|---|---|
+| Résolution du canevas | jusqu'à 1,75 × (écrans haute densité) | 0,5 × (moitié de la résolution) |
+| Faisceaux laser | tous, avec halo | moitié moins, sans halo |
+| Flammes et CO2 | toutes les particules | moitié moins |
+| Fumée et jets de machine à fumée | oui | non |
+| Halo flou du titre | oui | non |
+| Foule | 3 rangées, bras articulés, écrans de téléphones | 2 rangées, moins dense, bras simplifiés |
+| Cadence visée | 60 FPS | 30 FPS |
+
+Le mode normal n'est pas modifié. Détails de la détection automatique :
+
+- la mesure ne démarre qu'après 1,5 s (chargement) et seulement quand la scène est visible ;
+- le seuil a une marge de 5 % (bascule sous 28,5 FPS), pour qu'un navigateur volontairement bridé à 30 FPS (mode économie d'énergie) ne bascule pas pour rien ;
+- les images très espacées pendant que la fenêtre n'a pas le focus sont ignorées : c'est le navigateur qui ralentit un onglet en arrière-plan, pas la machine qui rame ;
+- une fois activé, le mode léger reste actif jusqu'au rechargement de la page. Un message `[TECHNO12] mode léger activé : … FPS mesurés` apparaît dans la console.
 - La page est responsive, du desktop au mobile.
 
 ## Tester en local
