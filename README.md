@@ -6,9 +6,13 @@ Tout tient dans **un seul fichier `index.html`** (HTML, CSS et JS intégrés). I
 
 ## Contenu de la page
 
-- **Scène animée en Canvas 2D** : un DJ en silhouette derrière son booth, un mur LED qui réagit au spectre audio, des lasers en éventail (cyan, magenta, vert, jaune) calés sur le tempo, des lyres, de la fumée, des jets de CO2 au drop, des flashs et une foule qui saute bras levés.
+- **Scène animée en Canvas 2D** : un DJ en silhouette derrière ses platines et sa table de mixage, un mur LED qui réagit au spectre audio, des lasers en éventail (cyan, magenta, vert, jaune) calés sur le tempo, des lyres, de la fumée volumétrique, des machines à fumée/CO2, des lance-flammes, des flashs et une foule qui saute bras levés.
 - **Titre « TECHNO12 »** avec effet glitch et dégradé néon animé, sous-titre « Live • Warehouse Session • 2026 ».
-- **Bouton « Drop the beat »** : lance une boucle techno à 128 BPM synthétisée en temps réel avec la Web Audio API (kick, hi-hats, clap, basse acide de type 303, nappe et montée pendant le breakdown). L'arrangement tourne sur 32 mesures (drop, breakdown, build) et les visuels suivent l'horloge audio.
+- **Bouton « Drop the beat »** : lance une boucle synthétisée en temps réel avec la Web Audio API. Un sélecteur permet de choisir le style :
+  - **Techno, 128 BPM** : kick, hi-hats, clap, basse acide de type 303, nappe et montée pendant le breakdown.
+  - **Hardstyle, 150 BPM** (composition originale en Fa mineur) : kick hardstyle saturé, reverse bass, screech lead, lead supersaw euphorique avec réverbération, nappes et snare roll.
+
+  L'arrangement tourne sur 32 mesures (drop, breakdown, build) et les visuels suivent l'horloge audio.
 - **Égaliseur animé** branché sur un `AnalyserNode`.
 - **En-tête** avec le logo et le menu (Line-up, Releases, Tickets), puis les sections correspondantes. Le pied de page affiche le crédit.
 
