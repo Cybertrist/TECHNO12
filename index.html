@@ -147,7 +147,7 @@ a{color:inherit}
 .hint{margin:.9rem 0 0;font:.72rem/1.4 var(--font-mono);letter-spacing:.12em;color:var(--muted);text-shadow:0 0 10px #000}
 
 /* ---------- Contenu ---------- */
-.content{position:relative;z-index:10;background:linear-gradient(to bottom,rgba(8,4,16,0),var(--panel) 7rem)}
+.content{position:relative;z-index:10;padding-bottom:clamp(3rem,8vw,5rem);background:linear-gradient(to bottom,rgba(8,4,16,0),var(--panel) 7rem)}
 .section{max-width:1120px;margin:0 auto;padding:clamp(3.5rem,8vw,6rem) clamp(1rem,4vw,2rem) 1rem;scroll-margin-top:4.5rem}
 .section h2{
   margin:0 0 .4rem;font:900 clamp(1.8rem,5vw,3rem)/1 var(--font-display);letter-spacing:-.01em;text-transform:uppercase;
@@ -187,20 +187,6 @@ a{color:inherit}
   .ticket{grid-template-columns:1fr auto}
   .ticket .info{grid-column:1/-1;grid-row:2}
 }
-
-/* ---------- Pied de page ---------- */
-.site-footer{
-  position:relative;z-index:10;background:#05020a;text-align:center;
-  padding:3rem 1rem calc(3rem + env(safe-area-inset-bottom));
-  border-top:2px solid transparent;
-  border-image:linear-gradient(90deg,var(--cyan),var(--mag),var(--yel),var(--green)) 1;
-}
-.credit{
-  margin:0;font:800 clamp(1.05rem,3vw,1.6rem)/1.35 var(--font-ui);letter-spacing:.02em;
-  background:linear-gradient(90deg,var(--cyan),var(--mag),var(--yel));
-  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
-}
-.fine{margin:.9rem auto 0;max-width:62ch;color:var(--muted);font-size:.82rem}
 
 /* ---------- Responsive ---------- */
 @media (max-width:640px){
@@ -294,10 +280,6 @@ a{color:inherit}
     </section>
   </div>
 </main>
-
-<footer class="site-footer">
-  <p class="credit">Site réalisé par Tristan Joncour · ENSIBS CyberDef5</p>
-</footer>
 
 <div class="sp-mini" id="spCard" aria-label="Lecteur Spotify"><div id="spEmbed"></div></div>
 

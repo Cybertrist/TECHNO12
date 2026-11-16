@@ -12,7 +12,7 @@ Tout tient dans **un seul fichier `index.html`** (HTML, CSS et JS intégrés). I
 - **Hors ligne** (Apache interne sans Internet) : le bouton lance à la place une boucle hardstyle originale à 150 BPM, générée en Web Audio (kick saturé, reverse bass, screech, lead supersaw). Le moteur techno 128 BPM d'origine est toujours présent dans le code.
 - **Logo** : intégré directement dans `index.html` (en-tête, pied de page, icône d'onglet), sans fichier image séparé.
 - **Égaliseur animé** branché sur un `AnalyserNode`.
-- **En-tête** avec le logo et le menu (Line-up, Releases, Tickets), puis les sections correspondantes. Le pied de page affiche le crédit.
+- **En-tête** avec le logo et le menu (Line-up, Releases, Tickets), puis les sections correspondantes.
 
 ## Accessibilité et performances
 
