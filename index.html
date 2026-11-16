@@ -651,7 +651,13 @@ function computeLayout() {
   const trussY = Math.max(66, H * 0.11);
   const spW = clamp(W * 0.085, 34, 120);
   return { mobile, cx, boothW, boothH, boothTop, stageBack, stageFront, wallW, wallH, wallTop, wallBottom,
-           wallX: cx - wallW / 2, trussY, spW };
+           wallX: cx - wallW / 2, trussY, spW,
+           // DJ (d = hauteur de référence) et setup à son échelle : CDJ ~0.36d, mixer ~0.32d
+           djD: Math.min(boothH * 1.45, boothW * 0.62),
+           machines: (() => {
+             const mw = clamp(W * 0.04, 26, 54), my = lerp(stageBack, stageFront, 0.45);
+             return [W * (mobile ? 0.1 : 0.12), W * (mobile ? 0.9 : 0.88)].map((x, i) => ({ x, y: my, w: mw, h: mw * 0.78, side: i ? 1 : -1 }));
+           })() };
 }
 
 function resize() {
@@ -878,13 +884,16 @@ function fogBurst() {
   for (const side of [-1, 1]) for (let i = 0; i < n; i++) {
     const p = spawnSmoke('floor', {}, false);
     p.burst = true;
-    p.x = L.cx + side * (L.wallW * 0.5 + L.spW * 1.2); p.y = L.stageBack + (Math.random() - 0.2) * L.boothH * 0.5;
-    p.vx = side * W * (0.1 + Math.random() * 0.12); p.vy = -Math.random() * 10;   // vers l'extérieur
+    const m = L.machines[side < 0 ? 0 : 1];
+    p.x = m.x + (Math.random() - 0.5) * m.w * 0.2; p.y = m.y - m.h - 4;
+    p.vx = (Math.random() - 0.5) * W * 0.04 - side * W * 0.015;           // léger penché vers la scène
+    p.vy = -(H * 0.35 + Math.random() * H * 0.25);                          // geyser vers le haut
     p.r = 40 + Math.random() * 40; p.grow = 70 + Math.random() * 60;
     p.life = 6 + Math.random() * 4; p.age = -i * 0.07;                 // départs échelonnés
     smoke.push(p);
   }
   if (smoke.length > 120) smoke.splice(0, smoke.length - 120);
+  machineHot = 2.2;
 }
 
 /* ---------- Dessin des éléments ---------- */
@@ -1018,7 +1027,7 @@ function drawSmoke(dt, t, energy, kick, flash, colIdx, layer, motion, A) {
     p.age += dt;
     if (p.age < 0) continue;
     if (p.age >= p.life) { if (p.burst) { smoke.splice(i, 1); continue; } spawnSmoke(layer, p, false); }
-    if (p.burst) p.vx *= drag;
+    if (p.burst) { p.vx *= drag; p.vy *= Math.exp(-dt * 1.6); }
     p.x += p.vx * dt * motion; p.y += p.vy * dt * motion;
     p.rot += p.vr * dt * motion; p.r += (p.grow + 4) * dt;
     if (!p.burst) { if (p.x < -p.r) p.x = W + p.r; else if (p.x > W + p.r) p.x = -p.r; }
@@ -1042,14 +1051,51 @@ function drawSmoke(dt, t, energy, kick, flash, colIdx, layer, motion, A) {
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 
-let co2Time = 0;
+let co2Time = 0, machineHot = 0;
+/* Machines à fumée / CO2 : blocs posés au sol de la scène */
+function drawMachines(dt, stepF) {
+  if (co2Time > 0) machineHot = Math.max(machineHot, 0.6);
+  machineHot = Math.max(0, machineHot - dt);
+  const hot = Math.min(1, machineHot);
+  for (const m of L.machines) {
+    const x0 = m.x - m.w / 2, y0 = m.y - m.h;
+    // Ombre au sol
+    g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(m.x, m.y + 2, m.w * 0.7, m.h * 0.12, 0, 0, TAU); g.fill();
+    // Caisson (face avant + dessus en perspective)
+    g.fillStyle = '#0d0918'; g.fillRect(x0, y0, m.w, m.h);
+    g.fillStyle = '#1b1430';
+    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + m.w, y0); g.lineTo(x0 + m.w * 0.9, y0 - m.h * 0.18); g.lineTo(x0 + m.w * 0.1, y0 - m.h * 0.18); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,0.14)'; g.lineWidth = 1; g.strokeRect(x0 + 0.5, y0 + 0.5, m.w - 1, m.h - 1);
+    // Grille d'aération
+    g.strokeStyle = 'rgba(255,255,255,0.08)'; g.beginPath();
+    for (let k = 1; k < 5; k++) { const yy = y0 + m.h * (0.3 + k * 0.12); g.moveTo(x0 + m.w * 0.12, yy); g.lineTo(x0 + m.w * 0.6, yy); }
+    g.stroke();
+    // Buse sur le dessus
+    g.fillStyle = '#26203a'; g.fillRect(m.x - m.w * 0.12, y0 - m.h * 0.18 - m.h * 0.22, m.w * 0.24, m.h * 0.24);
+    // Voyants : vert = prête, rouge = en action
+    g.globalCompositeOperation = 'lighter';
+    const lx = x0 + m.w * 0.78, ly = y0 + m.h * 0.35;
+    g.globalAlpha = hot > 0 ? 0.6 + 0.4 * Math.sin(stepF * Math.PI) : 0.8;
+    g.fillStyle = hot > 0 ? '#ff2a4a' : '#39ff14';
+    g.beginPath(); g.arc(lx, ly, 2.2, 0, TAU); g.fill();
+    g.globalAlpha = 0.5; g.fillStyle = '#00f0ff'; g.fillRect(x0 + m.w * 0.7, y0 + m.h * 0.6, m.w * 0.18, 2);
+    if (hot > 0) {
+      // Lueur à la sortie de la buse
+      const gy = y0 - m.h * 0.4, gr = g.createRadialGradient(m.x, gy, 0, m.x, gy, m.w * 0.9);
+      gr.addColorStop(0, 'rgba(220,230,255,' + (0.35 * hot) + ')'); gr.addColorStop(1, 'rgba(220,230,255,0)');
+      g.globalAlpha = 1; g.fillStyle = gr; g.fillRect(m.x - m.w, gy - m.w, m.w * 2, m.w * 2);
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+}
+
 function updateCO2(dt) {
   if (co2Time > 0) {
     co2Time -= dt;
     const k = Math.round(dt * (RM ? 25 : 70));
     for (const side of [-1, 1]) for (let i = 0; i < k; i++) {
       co2.push({
-        x: L.cx + side * (L.wallW * 0.5 + 18) + (Math.random() - 0.5) * 8, y: L.boothTop + L.boothH * 0.2,
+        x: L.machines[side < 0 ? 0 : 1].x + (Math.random() - 0.5) * 6, y: L.machines[0].y - L.machines[0].h - 4,
         vx: (Math.random() - 0.5) * 50 + side * 15, vy: -(H * 0.9 + Math.random() * H * 0.35),
         life: 1, r: 20 + Math.random() * 25
       });
@@ -1069,7 +1115,7 @@ function updateCO2(dt) {
 }
 
 function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
-  const d = L.boothH * 1.25, bw = L.boothW;
+  const d = L.djD;
   const th = L.boothH * 0.34, yb = L.boothTop - th;          // bord arrière du plan de travail
   const col = PALETTE[colIdx];
   const cx = L.cx + Math.sin(beatF * Math.PI / 2) * d * 0.025 * motion;        // balancement
@@ -1087,7 +1133,7 @@ function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
   const lsx = cx - d * 0.2, rsx = cx + d * 0.2, sy = shY + d * 0.035;
   // Cinématique inverse à 2 segments : bras et avant-bras de longueur FIXE.
   // Si la cible est hors de portée, la main s'arrête au bout du bras (pas d'étirement).
-  const UP = d * 0.36, FO = d * 0.34;
+  const UP = d * 0.28, FO = d * 0.26;
   const ik = (sx, tx, ty, side) => {
     const vx = tx - sx, vy = ty - sy, len = Math.hypot(vx, vy) || 1;
     const Lc = clamp(len, Math.abs(UP - FO) + d * 0.12, (UP + FO) * 0.995);
@@ -1101,10 +1147,10 @@ function drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing) {
   if (ear) { lhx = hx - d * 0.11; lhy = hy + d * 0.03; }
   else {
     const a = beatF * TAU * 0.5;
-    lhx = L.cx - bw * 0.22 + Math.cos(a) * bw * 0.02 * motion; lhy = yb + th * 0.45 + Math.sin(a) * th * 0.1 * motion;
+    lhx = L.cx - d * 0.47 + Math.cos(a) * d * 0.035 * motion; lhy = yb + th * 0.45 + Math.sin(a) * th * 0.1 * motion;
   }
   if (raise) { rhx = cx + d * 0.3; rhy = shY - d * 0.62 + kick * d * 0.06; }
-  else { rhx = L.cx + bw * 0.03 + Math.sin(beatF * Math.PI * 0.5 + 1) * bw * 0.03 * motion; rhy = yb + th * 0.3; }
+  else { rhx = L.cx + d * 0.05 + Math.sin(beatF * Math.PI * 0.5 + 1) * d * 0.06 * motion; rhy = yb + th * 0.3; }
   let lex, ley, rex, rey;
   [lex, ley, lhx, lhy] = ik(lsx, lhx, lhy, -1);
   [rex, rey, rhx, rhy] = ik(rsx, rhx, rhy, 1);
@@ -1204,7 +1250,7 @@ function drawDecks(stepF, beatF, kick, energy, colIdx, playing) {
   const spin = beatF * Math.PI * (playing ? 1.1 : 0.4);
   // Platines
   for (const side of [-1, 1]) {
-    const w = bw * 0.24, x = cx + side * bw * 0.265, y0 = yb + th * 0.1, h = th * 0.72;
+    const w = L.djD * 0.36, x = cx + side * L.djD * 0.52, y0 = yb + th * 0.1, h = th * 0.72;
     rrect(x - w / 2, y0, w, h, 3); g.fillStyle = '#0d0818'; g.fill();
     g.fillStyle = '#060309'; g.fillRect(x - w / 2, y0 + h, w, th * 0.12);
     const jx = x + side * w * 0.1, jy = y0 + h * 0.5, rx = w * 0.3, ry = h * 0.4;
@@ -1229,7 +1275,7 @@ function drawDecks(stepF, beatF, kick, energy, colIdx, playing) {
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
   // Table de mixage : 4 voies (3 potards + VU-mètre), crossfader
-  const mw = bw * 0.19, mx = cx - mw / 2, my = yb + th * 0.04, mh = th * 0.86;
+  const mw = L.djD * 0.32, mx = cx - mw / 2, my = yb + th * 0.04, mh = th * 0.86;
   rrect(mx, my, mw, mh, 3); g.fillStyle = '#0f0a1c'; g.fill();
   g.fillStyle = '#060309'; g.fillRect(mx, my + mh, mw, th * 0.1);
   const kr = Math.max(1.4, Math.min(mw / 16, mh / 11));
@@ -1250,6 +1296,27 @@ function drawDecks(stepF, beatF, kick, energy, colIdx, playing) {
   g.globalAlpha = 0.9; g.fillStyle = rgba(col, 1);
   g.fillRect(cx - mw * 0.18 + Math.sin(beatF * Math.PI / 4) * mw * 0.1 * (playing ? 1 : 0), my + mh * 0.92, mw * 0.08, mh * 0.06);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  const edge = L.djD * 0.7 + 8, room = bw * 0.47 - edge;
+  if (room > 24) {
+    // Laptop (droite) : écran incliné rétro-éclairé
+    const lw = Math.min(room * 0.8, L.djD * 0.42), lx = cx + edge + (room - lw) / 2;
+    g.fillStyle = '#0b0714'; g.fillRect(lx, yb + th * 0.55, lw, th * 0.25);
+    g.beginPath(); g.moveTo(lx + lw * 0.06, yb + th * 0.55); g.lineTo(lx + lw * 0.94, yb + th * 0.55);
+    g.lineTo(lx + lw * 0.86, yb - th * 0.75); g.lineTo(lx + lw * 0.14, yb - th * 0.75); g.closePath();
+    g.fillStyle = '#120b20'; g.fill();
+    g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35 + 0.25 * kick * energy;
+    g.fillStyle = rgba(col, 1); g.fillRect(lx + lw * 0.2, yb - th * 0.6, lw * 0.6, th * 1.0);
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    // Module d'effets (gauche)
+    const fw = Math.min(room * 0.7, L.djD * 0.3), fx = cx - edge - (room + fw) / 2;
+    rrect(fx, yb + th * 0.2, fw, th * 0.6, 3); g.fillStyle = '#0d0818'; g.fill();
+    g.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 3; k++) {
+      g.globalAlpha = (Math.floor(stepF) + k) % 3 === 0 ? 1 : 0.3; g.fillStyle = k === 1 ? '#ff1fd1' : '#00f0ff';
+      g.beginPath(); g.arc(fx + fw * (0.25 + k * 0.25), yb + th * 0.5, 2, 0, TAU); g.fill();
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
 }
 
 function drawSpill(kick, energy, colIdx) {
@@ -1449,6 +1516,7 @@ function frame(now) {
   drawDecks(stepF, beatF, kick, energy, colIdx, playing);
   drawDJ(beatF, kick, energy, colIdx, A, bar, motion, playing);
   drawBoothLights(stepF, kick, energy, colIdx);
+  drawMachines(dt, stepF);
   updateCO2(dt);
   drawSpill(kick, energy, colIdx);
   drawCrowd(beatF, kick, energy, motion);
