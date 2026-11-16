@@ -599,18 +599,41 @@ function makeLayer(w, h) {
   return { c, x };
 }
 
-/* Sprites de fumée (indépendants de la résolution) */
-const sprites = [LAVENDER, [0, 190, 255], [255, 60, 200], WHITE].map(col => {
-  const s = 128, cv = document.createElement('canvas'); cv.width = cv.height = s;
-  const x = cv.getContext('2d');
-  for (let i = 0; i < 8; i++) {
-    const r = s * (0.16 + Math.random() * 0.22);
-    const px = s / 2 + (Math.random() - 0.5) * s * 0.36, py = s / 2 + (Math.random() - 0.5) * s * 0.24;
-    const gr = x.createRadialGradient(px, py, 0, px, py, r);
-    gr.addColorStop(0, rgba(col, 0.22)); gr.addColorStop(1, rgba(col, 0));
-    x.fillStyle = gr; x.fillRect(0, 0, s, s);
+/* Sprites de fumée : masques en bruit fractal (fBm) générés une fois, puis teintés */
+function makeSmokeMask(seed, S) {
+  let st = (seed * 7919 + 13) % 233280;
+  const rnd = () => (st = (st * 9301 + 49297) % 233280) / 233280;
+  const octs = [3, 6, 12, 24].map(n => { const gr = new Float32Array((n + 1) * (n + 1)); for (let i = 0; i < gr.length; i++) gr[i] = rnd(); return { n, gr }; });
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d'), img = x.createImageData(S, S), d = img.data;
+  for (let py = 0; py < S; py++) for (let px = 0; px < S; px++) {
+    const u = px / S, v = py / S;
+    let f = 0, amp = 0.55, tot = 0;
+    for (const o of octs) {
+      const fx = u * o.n, fy = v * o.n, ix = fx | 0, iy = fy | 0;
+      let tx = fx - ix, ty = fy - iy; tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+      const w = o.n + 1, a = o.gr[iy * w + ix], b = o.gr[iy * w + ix + 1], cc = o.gr[(iy + 1) * w + ix], dd = o.gr[(iy + 1) * w + ix + 1];
+      f += (a + (b - a) * tx + (cc - a) * ty + (a - b - cc + dd) * tx * ty) * amp; tot += amp; amp *= 0.5;
+    }
+    f /= tot;
+    const dx = u - 0.5, dy = v - 0.5, r = Math.sqrt(dx * dx + dy * dy) * 2;
+    const fall = clamp(1 - r * (0.8 + 0.7 * (0.5 - f)), 0, 1);           // bord irrégulier
+    const a = clamp((fall * fall * (0.25 + 1.1 * f) - 0.06) * 1.4, 0, 1);
+    const i = (py * S + px) * 4;
+    d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = a * 170;
   }
-  return cv;
+  x.putImageData(img, 0, 0);
+  return c;
+}
+const SMOKE_COLORS = [LAVENDER, ...PALETTE, WHITE];                     // 0 lavande, 1-4 palette, 5 blanc
+const smokeSpr = [1, 2, 3, 4].map(seed => {
+  const m = makeSmokeMask(seed, 160);
+  return SMOKE_COLORS.map(col => {
+    const c = document.createElement('canvas'); c.width = c.height = m.width;
+    const x = c.getContext('2d'); x.drawImage(m, 0, 0);
+    x.globalCompositeOperation = 'source-in'; x.fillStyle = rgba(col, 1); x.fillRect(0, 0, c.width, c.height);
+    return c;
+  });
 });
 
 function computeLayout() {
@@ -821,18 +844,47 @@ function buildCrowd() {
   });
 }
 
+/* Fumée : 3 couches (haze de fond, brouillard bas sur la scène, voile sur la foule) */
+const SMOKE_LAYERS = {
+  back:  { a: 0.32, sq: [0.55, 0.8], life: [14, 26], vx: 16 },
+  floor: { a: 0.55, sq: [0.3, 0.45], life: [10, 18], vx: 28 },
+  front: { a: 0.2,  sq: [0.45, 0.6], life: [12, 22], vx: 20 },
+};
+function spawnSmoke(layer, p, initial) {
+  const r = Math.random;
+  p.layer = layer; p.burst = false; p.grow = 0;
+  if (layer === 'back') { p.y = lerp(L.wallTop - L.wallH * 0.4, L.stageFront, r()); p.r = Math.max(170, W * lerp(0.16, 0.32, r())); }
+  else if (layer === 'floor') { p.y = lerp(L.stageBack, L.stageFront + L.boothH * 0.25, r()); p.r = Math.max(130, W * lerp(0.1, 0.2, r())); }
+  else { p.y = lerp(H * 0.74, H * 1.02, r()); p.r = Math.max(150, W * lerp(0.14, 0.28, r())); }
+  const cfg = SMOKE_LAYERS[layer];
+  p.x = r() * (W + p.r) - p.r / 2;
+  p.vx = (r() - 0.5) * 2 * cfg.vx; p.vy = (r() - 0.5) * 4;
+  p.rot = r() * TAU; p.vr = (r() - 0.5) * 0.08;
+  p.sq = lerp(cfg.sq[0], cfg.sq[1], r());
+  p.life = lerp(cfg.life[0], cfg.life[1], r()); p.age = initial ? r() * p.life : 0;
+  p.m = (r() * smokeSpr.length) | 0; p.slot = (r() * 4) | 0;
+  return p;
+}
 function buildSmoke() {
-  const n = L.mobile ? 12 : 20;
+  const k = L.mobile ? 0.55 : 1;
   smoke = [];
-  for (let i = 0; i < n; i++) {
-    smoke.push({
-      x: Math.random() * W, y0: lerp(L.wallTop, H * 0.92, Math.random()),
-      r: Math.max(120, lerp(W * 0.12, W * 0.3, Math.random())),
-      vx: (Math.random() - 0.5) * 14, ph: Math.random() * TAU, spr: i % 3,
-      a: 0.5 + Math.random() * 0.5, front: i % 4 === 0
-    });
-  }
+  const add = (layer, n) => { for (let i = 0; i < Math.round(n * k); i++) smoke.push(spawnSmoke(layer, {}, true)); };
+  add('back', 14); add('floor', 12); add('front', 8);
   co2 = [];
+}
+// Machine à fumée : jets horizontaux depuis les côtés de la scène
+function fogBurst() {
+  const n = L.mobile ? 5 : 9;
+  for (const side of [-1, 1]) for (let i = 0; i < n; i++) {
+    const p = spawnSmoke('floor', {}, false);
+    p.burst = true;
+    p.x = L.cx + side * (L.wallW * 0.5 + L.spW * 1.2); p.y = L.stageBack + (Math.random() - 0.2) * L.boothH * 0.5;
+    p.vx = side * W * (0.1 + Math.random() * 0.12); p.vy = -Math.random() * 10;   // vers l'extérieur
+    p.r = 40 + Math.random() * 40; p.grow = 70 + Math.random() * 60;
+    p.life = 6 + Math.random() * 4; p.age = -i * 0.07;                 // départs échelonnés
+    smoke.push(p);
+  }
+  if (smoke.length > 120) smoke.splice(0, smoke.length - 120);
 }
 
 /* ---------- Dessin des éléments ---------- */
@@ -954,17 +1006,39 @@ function drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion) {
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 
-function drawSmoke(dt, t, energy, flash, colIdx, front, motion) {
+function drawSmoke(dt, t, energy, kick, flash, colIdx, layer, motion, A) {
+  const cfg = SMOKE_LAYERS[layer];
+  const dens = (A.sec === 'break' ? 1.35 : 1) * (0.75 + 0.35 * energy);
+  const lit = 0.12 + 0.5 * energy * (0.45 + 0.55 * kick) + 0.7 * flash;
+  const drag = Math.exp(-dt * 0.9);
   g.globalCompositeOperation = 'lighter';
-  for (const p of smoke) {
-    if (p.front !== front) continue;
-    p.x += p.vx * dt * motion;
-    if (p.x < -p.r) p.x = W + p.r; else if (p.x > W + p.r) p.x = -p.r;
-    const y = p.y0 + Math.sin(t * 0.25 + p.ph) * 12;
-    const spr = sprites[(p.spr + colIdx) % 3];
-    g.globalAlpha = p.a * (front ? 0.5 : 1) * (0.2 + 0.25 * energy + 0.3 * flash);
-    g.drawImage(spr, p.x - p.r, y - p.r * 0.6, p.r * 2, p.r * 1.2);
+  for (let i = smoke.length - 1; i >= 0; i--) {
+    const p = smoke[i];
+    if (p.layer !== layer) continue;
+    p.age += dt;
+    if (p.age < 0) continue;
+    if (p.age >= p.life) { if (p.burst) { smoke.splice(i, 1); continue; } spawnSmoke(layer, p, false); }
+    if (p.burst) p.vx *= drag;
+    p.x += p.vx * dt * motion; p.y += p.vy * dt * motion;
+    p.rot += p.vr * dt * motion; p.r += (p.grow + 4) * dt;
+    if (!p.burst) { if (p.x < -p.r) p.x = W + p.r; else if (p.x > W + p.r) p.x = -p.r; }
+    // Fondu d'apparition / disparition sur la durée de vie
+    const life = Math.sin(Math.PI * clamp(p.age / p.life, 0, 1));
+    // Centre dégagé : la fumée de scène s'estompe autour du DJ et du mur LED
+    let mid = 1;
+    if (layer !== 'front') mid = clamp((Math.abs(p.x - L.cx) - L.wallW * 0.2) / (L.wallW * 0.5), 0.12, 1);
+    const al = cfg.a * life * dens * mid * (p.burst ? 0.75 : 1);
+    if (al < 0.004) continue;
+    const c = Math.cos(p.rot) * DPR, sn = Math.sin(p.rot) * DPR;
+    g.setTransform(c, sn, -sn * p.sq, c * p.sq, p.x * DPR, p.y * DPR);
+    const set = smokeSpr[p.m], R = p.r;
+    // Passe 1 : volume (lavande) ; passe 2 : éclairage coloré des projecteurs
+    g.globalAlpha = al * 0.55;
+    g.drawImage(set[0], -R, -R, R * 2, R * 2);
+    g.globalAlpha = Math.min(1, al * lit);
+    g.drawImage(set[1 + (p.slot + colIdx) % 4], -R, -R, R * 2, R * 2);
   }
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 
@@ -989,7 +1063,7 @@ function updateCO2(dt) {
     p.vy *= Math.max(0, 1 - dt * 2.4); p.x += p.vx * dt; p.y += p.vy * dt; p.r += dt * 130; p.life -= dt * 0.85;
     if (p.life <= 0) { co2.splice(i, 1); continue; }
     g.globalAlpha = p.life * 0.32;
-    g.drawImage(sprites[3], p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+    g.drawImage(smokeSpr[i % smokeSpr.length][5], p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
   }
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
@@ -1314,6 +1388,8 @@ function triggerFlash(a, c) { if (a > flash) { flash = a; flashCol = c; } }
 function onStep(s) {
   const bar = Math.floor(s / 16), s16 = s % 16, A = arrangement(bar);
   const fx = flashesOn && !RM;
+  // Machine à fumée : arrivée de la basse, début du breakdown, milieu du drop
+  if (s16 === 0 && (bar === 4 || (A.sec === 'break' && A.s === 24) || (A.sec === 'drop' && bar % 16 === 12))) fogBurst();
   if (isDropStart(bar) && s16 === 0) {
     triggerFlash(fx ? 0.85 : 0.05, WHITE); glitch(); co2Time = RM ? 0.6 : 1.4;
   } else if (A.sec === 'drop') {
@@ -1366,7 +1442,8 @@ function frame(now) {
   drawWall(A, beatF, kick, energy, colIdx);
   drawHeads(beatF * (playing ? 1 : 0.5), energy, kick, A, colIdx, motion);
   drawLasers(A, beatF, stepF, kick, energy, colIdx, playing, motion);
-  drawSmoke(dt, t, energy, flash, colIdx, false, motion);
+  drawSmoke(dt, t, energy, kick, flash, colIdx, 'back', motion, A);
+  drawSmoke(dt, t, energy, kick, flash, colIdx, 'floor', motion, A);
   const bx = Math.max(0, L.cx - L.boothW / 2 - 6), by = L.boothTop - 4, bw = L.boothW + 12, bh = L.boothH + 10;
   g.drawImage(layers.booth.c, bx * DPR, by * DPR, bw * DPR, bh * DPR, bx, by, bw, bh);
   drawDecks(stepF, beatF, kick, energy, colIdx, playing);
@@ -1375,7 +1452,7 @@ function frame(now) {
   updateCO2(dt);
   drawSpill(kick, energy, colIdx);
   drawCrowd(beatF, kick, energy, motion);
-  drawSmoke(dt, t, energy, flash, colIdx, true, motion);
+  drawSmoke(dt, t, energy, kick, flash, colIdx, 'front', motion, A);
 
   // Flash / stroboscope
   if (flash > 0.003) {
